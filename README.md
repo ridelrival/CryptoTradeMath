@@ -2,6 +2,8 @@
 
 An offline-first PWA for planning one **linear USDT/USDC perpetual-futures position in isolated margin**. It supports English, Indonesian, and Japanese, plus Dark and Light themes.
 
+Live site: <https://ridelrival.github.io/CryptoTradeMath-old/>
+
 ## Important scope
 
 - The calculator is **isolated-only**.
@@ -123,15 +125,8 @@ Automatic public contract-specification adapters are included for OKX, Binance, 
 
 All application paths are relative, so the PWA works from a GitHub Pages project subfolder. GitHub Pages supplies the HTTPS connection required for installation and service-worker offline mode.
 
-## Local verification
+## Local preview
 
-The project has no runtime dependencies. With Node.js installed:
-
-```text
-npm test
-npm run check
-```
-
-Serve the folder over HTTP for a complete local PWA preview. Opening `index.html` directly still allows calculator testing, but browsers do not register service workers from `file://`.
+This repository contains the static PWA files published by GitHub Pages; no build step is required. Serve the repository root over HTTP for a complete local preview. Opening `index.html` directly still allows calculator testing, but browsers do not register service workers from `file://`.
 
 This calculator is a planning aid, not financial advice or an exchange liquidation engine.
