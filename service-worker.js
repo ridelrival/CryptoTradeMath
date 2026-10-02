@@ -1,0 +1,12 @@
+"use strict";
+
+// Upgrade visitors who installed the previous CryptoTradeMath PWA.
+self.addEventListener("install", (event) => {
+  event.waitUntil(self.skipWaiting());
+});
+
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    caches.delete("trademath-cache-v1").then(() => self.clients.claim()),
+  );
+});
