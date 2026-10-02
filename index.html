@@ -1,257 +1,882 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#121212">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="mobile-web-app-capable" content="yes">
-    <title>Crypto Futures TradeMath</title>
-    <link rel="manifest" href="./manifest.json">
-    <link rel="icon" type="image/png" href="./icons/icon-192.png">
-    <link rel="apple-touch-icon" href="./icons/icon-192.png">
-    <link rel="stylesheet" href="./style.css">
-</head>
-<body>
-    <noscript>
-        <div style="background:#121212;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;text-align:center;">
-            <div>
-                <h1 style="color:#00D9A3;">Crypto Futures TradeMath</h1>
-                <p>JavaScript diperlukan untuk menjalankan aplikasi ini.</p>
-            </div>
-        </div>
-    </noscript>
-
-    <div id="loading-fallback" style="background:#121212;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;">
-        <div style="text-align:center;">
-            <div style="width:48px;height:48px;border:3px solid #1A1D29;border-top-color:#00D9A3;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px;"></div>
-            <p style="color:#8B92A7;">Loading...</p>
-        </div>
-    </div>
-    <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
-
-    <div id="app" style="display:none;">
-        <header class="header">
-            <div class="header-content">
-                <div class="header-left">
-                    <div class="header-icon">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="4" y="2" width="16" height="20" rx="2"/>
-                            <line x1="8" y1="6" x2="16" y2="6"/>
-                            <line x1="16" y1="14" x2="16" y2="18"/>
-                            <path d="M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M8 18h.01M12 18h.01"/>
-                        </svg>
-                    </div>
-                    <h1 class="header-title">Crypto Futures TradeMath</h1>
-                </div>
-                <button id="nav-history" class="nav-btn">
-                    History
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
-                    </svg>
-                </button>
-            </div>
-        </header>
-
-        <main id="page-calculator" class="page active">
-            <div class="main-content">
-                <div id="persistent-warning" style="background: rgba(255, 184, 0, 0.1); border: 1px solid rgba(255, 184, 0, 0.3); border-radius: 8px; padding: 12px; margin-bottom: 20px; color: #FFB800; font-size: 14px; text-align: center;">
-                    ⚠️ Attention! Make sure you already have a trade plan before using this calculator.
-                </div>
-                <div class="grid-layout">
-                    <div class="input-section">
-                        <div class="card">
-                            <div class="card-header">
-                                <span class="card-title">Parameters</span>
-                            </div>
-                            <div class="card-body">
-                                <div class="input-row">
-                                    <div class="input-group">
-                                        <label class="input-label">Account Balance</label>
-                                        <div class="input-wrapper">
-                                            <input type="text" id="totalCapital" class="input-field" placeholder="0" inputmode="decimal">
-                                            <span class="input-suffix">$</span>
-                                        </div>
-                                    </div>
-                                    <div class="input-group" id="risk-input-group">
-                                        <label class="input-label">Risk</label>
-                                        <div class="input-with-select">
-                                            <input type="text" id="maxRisk" class="input-field input-risk" placeholder="0" inputmode="decimal">
-                                            <select id="riskUnitSelect" class="unit-select">
-                                                <option value="$">$</option>
-                                                <option value="%" selected>%</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="input-row">
-                                    <div class="input-group">
-                                        <label class="input-label">Leverage</label>
-                                        <div class="input-wrapper">
-                                            <input type="text" id="leverage" class="input-field" placeholder="0" inputmode="decimal">
-                                            <span class="input-suffix">x</span>
-                                        </div>
-                                    </div>
-                                    <div class="input-group">
-                                        <label class="input-label">Entry Price</label>
-                                        <div class="input-wrapper">
-                                            <input type="text" id="entryPrice" class="input-field" placeholder="0" inputmode="decimal">
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="input-row">
-                                    <div class="input-group">
-                                        <label class="input-label">Stop Loss</label>
-                                        <div class="input-wrapper input-danger">
-                                            <input type="text" id="stopLoss" class="input-field" placeholder="0" inputmode="decimal">
-                                        </div>
-                                    </div>
-                                    <div class="input-group">
-                                        <label class="input-label">Take Profit</label>
-                                        <div class="input-wrapper input-success">
-                                            <input type="text" id="takeProfit" class="input-field" placeholder="0" inputmode="decimal">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="results-section">
-                        <div id="warning-banner" class="warning-banner" style="display:none;">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-                            </svg>
-                            <div class="warning-content">
-                                <strong>Liquidation Risk</strong>
-                                <span id="warning-text"></span>
-                            </div>
-                        </div>
-
-                        <div id="empty-state" class="empty-state">
-                            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>
-                            </svg>
-                            <p class="empty-title">Enter trade parameters to see analysis</p>
-                            <p class="empty-subtitle">Real-time risk calculations, liquidation checks, and position sizing.</p>
-                        </div>
-
-                        <div id="trade-direction" style="display:none; text-align:center; margin-bottom: 16px;">
-                            <div style="display: flex; justify-content: center; align-items: center; gap: 16px;">
-                                <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.7;">Type of Trade</span>
-                                <div id="long-box" style="display: flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: 12px; font-weight: bold; transition: all 0.3s;">
-                                    <span style="font-size: 18px;">↑</span>
-                                    <span style="font-size: 18px;">LONG</span>
-                                </div>
-                                <div id="short-box" style="display: flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: 12px; font-weight: bold; transition: all 0.3s;">
-                                    <span style="font-size: 18px;">↓</span>
-                                    <span style="font-size: 18px;">SHORT</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div id="results-grid" class="results-grid" style="display:none;">
-                            <div class="stat-card">
-                                <span class="stat-label">Margin Cost</span>
-                                <span id="stat-margin" class="stat-value">$0.00</span>
-                                <span id="stat-margin-sub" class="stat-subtext">0% of Account Balance</span>
-                            </div>
-                            <div class="stat-card stat-danger">
-                                <span class="stat-label">Risk Amount</span>
-                                <span id="stat-risk" class="stat-value">-$0.00</span>
-                                <span id="stat-risk-sub" class="stat-subtext">0% of Account Balance</span>
-                            </div>
-                            <div class="stat-card stat-success">
-                                <span class="stat-label">Potential Profit</span>
-                                <span id="stat-profit" class="stat-value">+$0.00</span>
-                                <span id="stat-profit-sub" class="stat-subtext">0% of Account Balance Gain</span>
-                            </div>
-                            <div class="stat-card">
-                                <span class="stat-label">R:R Ratio</span>
-                                <span id="stat-rr" class="stat-value">1:0</span>
-                                <span id="stat-rr-sub" class="stat-subtext">-</span>
-                            </div>
-                            <div class="stat-card stat-success">
-                                <span class="stat-label">Return on Margin Cost</span>
-                                <span id="stat-roe" class="stat-value">0%</span>
-                                <span id="stat-roe-sub" class="stat-subtext">Return on Equity (ROE)</span>
-                            </div>
-                            <div class="stat-card">
-                                <span class="stat-label">Amount of Position (USDT)</span>
-                                <span id="stat-position" class="stat-value">$0.00</span>
-                                <span id="stat-position-sub" class="stat-subtext">Total Position Size</span>
-                            </div>
-                            <div id="stat-liq-isolated" class="stat-card stat-warning stat-liq-card">
-                                <span class="stat-label">Est. Liq Price (Isolated)</span>
-                                <span id="stat-liq-isolated-value" class="stat-value">$0</span>
-                                <span id="stat-liq-isolated-sub" class="stat-subtext">Isolated Margin Liquidation</span>
-                            </div>
-                            <div id="stat-liq-cross" class="stat-card stat-warning stat-liq-card">
-                                <span class="stat-label">Est. Liq Price (Cross)</span>
-                                <span id="stat-liq-cross-value" class="stat-value">$0</span>
-                                <span id="stat-liq-cross-sub" class="stat-subtext">Cross Margin Liquidation</span>
-                            </div>
-                        </div>
-
-                        <div id="footer-actions" style="display: flex; justify-content: flex-end; gap: 12px; width: 100%; margin-top: 15px; box-sizing: border-box;">
-                            <button type="button" id="btn-reset-mobile" class="btn btn-secondary" style="width: auto; padding: 10px 24px; font-size: 14px; font-weight: 600; border-radius: 8px; cursor: pointer; background: rgba(255,255,255,0.1); color: #fff; border: none;">Reset</button>
-                            <button type="button" id="btn-save-mobile" class="btn btn-primary" style="width: auto; padding: 10px 24px; font-size: 14px; font-weight: 600; border-radius: 8px; cursor: pointer; background: #00D9A3; color: #121212; border: none;" disabled>Save</button>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-        </main>
-
-        <main id="page-history" class="page">
-            <div class="main-content">
-                <div class="history-header">
-                    <button id="nav-back" class="back-btn">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
-                        </svg>
-                    </button>
-                    <h2 class="page-title">Trade History</h2>
-                    <button id="btn-clear-history" class="clear-btn" style="display:none;">Clear All</button>
-                </div>
-
-                <div id="history-empty" class="history-empty">
-                    <div class="history-empty-icon">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-                        </svg>
-                    </div>
-                    <h3>No history yet</h3>
-                    <p>Calculate and save your first trade plan.</p>
-                    <button id="btn-go-calc" class="btn btn-primary">Go to Calculator</button>
-                </div>
-
-                <div id="history-list" class="history-list"></div>
-            </div>
-        </main>
-
-        <div id="toast" class="toast" style="display:none;">
-            <span id="toast-message"></span>
-        </div>
-    </div>
-
-    <script src="./app.js"></script>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0c0e0f" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta
+      name="description"
+      content="Offline-first USDT perpetual futures position sizing, fee, risk, liquidation, and trade planning calculator."
+    />
+    <meta name="color-scheme" content="dark light" />
     <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register('./service-worker.js')
-                    .then(function(registration) {
-                        console.log('ServiceWorker registered');
-                    })
-                    .catch(function(err) {
-                        console.log('ServiceWorker registration failed');
-                    });
-            });
+      (() => {
+        try {
+          const storedTheme = localStorage.getItem("trademath-theme");
+          const theme = ["dark", "light", "pitch-black"].includes(storedTheme)
+            ? storedTheme
+            : "dark";
+          const color =
+            theme === "light" ? "#f2f5f7" : theme === "pitch-black" ? "#000000" : "#0c0e0f";
+          document.documentElement.dataset.theme = theme;
+          document.documentElement.style.backgroundColor = color;
+          document.querySelector('meta[name="theme-color"]')?.setAttribute("content", color);
+          document
+            .querySelector('meta[name="apple-mobile-web-app-status-bar-style"]')
+            ?.setAttribute("content", theme === "light" ? "default" : "black-translucent");
+        } catch (_) {
+          // Storage can be unavailable in private browsing; the dark default remains safe.
         }
+      })();
     </script>
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" type="image/png" href="./assets/icons/favicon-64.png" />
+    <link rel="apple-touch-icon" href="./assets/icons/icon-192.png" />
+    <link rel="stylesheet" href="./styles.css?v=85" />
+    <title>Crypto TradeMath</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#calculator">Skip to calculator</a>
 
-</body>
+    <header class="app-header">
+      <a class="brand" href="./" aria-label="Crypto TradeMath home">
+        <img src="./assets/icons/icon-192.png" alt="" width="44" height="44" />
+        <span><strong>Crypto</strong><span>TradeMath</span></span>
+      </a>
+
+      <nav class="header-actions" aria-label="Application">
+        <button id="installButton" class="nav-button is-hidden" type="button">
+          <span aria-hidden="true">↓</span>
+          <span data-i18n="install">Install</span>
+        </button>
+        <button id="historyButton" class="nav-button" type="button">
+          <span data-i18n="history">History</span>
+          <span aria-hidden="true">→</span>
+        </button>
+        <a
+          class="nav-button"
+          href="https://crypto-trade-journalzipzip--ridelrival98.replit.app/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span data-i18n="journal">Journal</span>
+          <span aria-hidden="true">↗</span>
+        </a>
+        <button id="languageButton" class="language-button" type="button" aria-haspopup="dialog">
+          <span aria-hidden="true">◎</span>
+          <span id="activeLanguage">EN</span>
+        </button>
+        <button id="themeButton" class="theme-button" type="button" aria-haspopup="dialog">
+          <span id="themeIcon" aria-hidden="true">☾</span>
+          <span id="activeTheme">Dark</span>
+        </button>
+        <button id="refreshButton" class="refresh-button" type="button" title="Refresh data">
+          <span class="refresh-icon" aria-hidden="true">↻</span>
+          <span class="visually-hidden" data-i18n="refreshData">Refresh data</span>
+        </button>
+        <button id="settingsButton" class="settings-button" type="button" aria-haspopup="dialog" title="Settings">
+          <span class="settings-icon" aria-hidden="true">⚙</span>
+          <span class="visually-hidden" data-i18n="settings">Settings</span>
+        </button>
+      </nav>
+    </header>
+
+    <main id="calculator" class="app-shell">
+      <details id="attentionPanel" class="attention-banner" aria-label="Risk reminder" open>
+        <summary class="attention-summary">
+          <div class="attention-row attention-heading">
+            <span class="attention-marker" aria-hidden="true">⚠</span>
+            <strong data-i18n="attentionHeading">Attention!</strong>
+          </div>
+          <span class="summary-arrow" aria-hidden="true">⌄</span>
+        </summary>
+        <div class="attention-content">
+          <ul class="attention-list">
+            <li class="attention-row">
+              <span class="attention-marker" aria-hidden="true">•</span>
+              <span data-i18n="isolatedScopeReminder">
+                This calculator is designed only for one isolated-margin linear perpetual position.
+              </span>
+            </li>
+            <li class="attention-row">
+              <span class="attention-marker" aria-hidden="true">•</span>
+              <span data-i18n="planReminder">
+                Make sure you already have a trade plan before using this calculator.
+              </span>
+            </li>
+          </ul>
+        </div>
+      </details>
+
+      <noscript>
+        <section class="alert alert-error">
+          JavaScript is required for this calculator. / Kalkulator ini memerlukan JavaScript.
+        </section>
+      </noscript>
+
+      <div class="workspace">
+        <form id="tradeForm" class="input-column" novalidate>
+          <input id="symbol" name="symbol" type="hidden" value="COIN" />
+          <input id="tp1Allocation" name="tp1Allocation" type="hidden" value="100" />
+
+          <section id="parametersPanel" class="panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow" data-i18n="tradePlan">Trade plan</p>
+                <h1 data-i18n="parameters">Parameters</h1>
+              </div>
+              <span class="parameter-statuses" role="status" aria-live="polite">
+                <span class="status-pill" id="calculationStatus" data-i18n="ready">Ready</span>
+                <span class="trade-side-pill" id="tradeSideStatus" hidden></span>
+              </span>
+            </div>
+
+            <div class="field-grid">
+              <label class="field instrument-field parameter-ticker-field">
+                <span data-i18n="contractInstrument">TICKER</span>
+                <span class="input-shell">
+                  <input
+                    id="instrumentSymbol"
+                    name="instrumentSymbol"
+                    type="text"
+                    value=""
+                    spellcheck="false"
+                    autocomplete="off"
+                  />
+                  <span class="suffix" id="instrumentSettlement">USDT</span>
+                </span>
+              </label>
+
+              <section class="field exchange-max-leverage-field">
+                <span class="exchange-max-leverage-label" data-i18n="exchangeMaxLeverageInfo">Exchange max leverage</span>
+                <span
+                  id="exchangeMaxLeverageCard"
+                  class="exchange-max-leverage-card waiting"
+                  aria-live="polite"
+                  aria-atomic="true"
+                >
+                  <span class="exchange-max-leverage-copy">
+                    <small id="exchangeMaxLeverageStatus" data-i18n="exchangeMaxLeverageEnterTicker">Enter a ticker</small>
+                  </span>
+                  <span class="exchange-max-leverage-result">
+                    <output id="exchangeMaxLeverageValue">—</output>
+                    <a
+                      id="exchangeMaxLeverageSource"
+                      class="exchange-max-leverage-source is-hidden"
+                      href="#"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      data-i18n="viewSource"
+                    >View source</a>
+                  </span>
+                </span>
+              </section>
+
+              <label class="field">
+                <span data-i18n="accountBalance">Account balance</span>
+                <span class="input-shell">
+                  <span class="prefix">$</span>
+                  <input id="balance" name="balance" type="text" value="" inputmode="decimal" autocomplete="off" />
+                </span>
+              </label>
+
+              <label class="field">
+                <span data-i18n="risk">Risk</span>
+                <span class="input-shell">
+                  <input id="riskValue" name="riskValue" type="text" value="" inputmode="decimal" autocomplete="off" />
+                  <select id="riskUnit" name="riskUnit" class="inline-select compact-select" aria-label="Risk unit">
+                    <option value="percent">%</option>
+                    <option value="amount">$</option>
+                  </select>
+                </span>
+              </label>
+
+              <label class="field">
+                <span data-i18n="leverage">Leverage</span>
+                <span class="input-shell">
+                  <input id="leverage" name="leverage" type="text" value="" inputmode="decimal" autocomplete="off" />
+                  <span class="suffix">×</span>
+                </span>
+              </label>
+
+              <label class="field">
+                <span data-i18n="entryPrice">Entry price</span>
+                <span class="input-shell">
+                  <input id="entryPrice" name="entryPrice" type="text" value="" inputmode="decimal" autocomplete="off" />
+                </span>
+              </label>
+
+              <label class="field field-stop">
+                <span data-i18n="stopLoss">Stop loss</span>
+                <span class="input-shell">
+                  <input id="stopLoss" name="stopLoss" type="text" value="" inputmode="decimal" autocomplete="off" />
+                </span>
+              </label>
+
+              <label class="field field-target">
+                <span data-i18n="takeProfitOne">Take profit</span>
+                <span class="input-shell">
+                  <input id="tp1Price" name="tp1Price" type="text" value="" inputmode="decimal" autocomplete="off" />
+                </span>
+              </label>
+
+            </div>
+            <div id="portraitPrimaryMetrics" class="portrait-primary-metrics" hidden></div>
+            <p class="number-format-note" data-i18n="numberFormatHint">
+              International number formats are accepted and normalized after you leave a field.
+            </p>
+          </section>
+
+          <details id="seeMoreResultsPanel" class="panel see-more-panel" hidden>
+            <summary class="panel-heading compact">
+              <span class="panel-heading-copy">
+                <strong data-i18n="seeMore">See more</strong>
+              </span>
+              <span class="summary-arrow" aria-hidden="true">⌄</span>
+            </summary>
+            <div id="seeMoreMetricGrid" class="see-more-metric-grid"></div>
+            <div id="seeMoreAdvancedHost"></div>
+          </details>
+
+          <details id="exitPlanPanel" class="panel targets-panel" open>
+            <summary class="panel-heading compact">
+              <span class="panel-heading-copy">
+                <p class="eyebrow" data-i18n="exitPlan">Exit plan</p>
+                <h2 data-i18n="takeProfitTargets">Take-profit targets</h2>
+              </span>
+              <span class="summary-arrow" aria-hidden="true">⌄</span>
+            </summary>
+
+            <div class="targets-header" aria-hidden="true">
+              <span data-i18n="target">Target</span>
+              <span data-i18n="price">Price</span>
+              <span data-i18n="allocation">Allocation</span>
+            </div>
+
+            <div class="target-row">
+              <label class="target-toggle">
+                <input id="tp2Enabled" name="tp2Enabled" type="checkbox" />
+                <span>TP2</span>
+              </label>
+              <input id="tp2Price" name="tp2Price" aria-label="TP2 price" type="text" value="" inputmode="decimal" autocomplete="off" disabled />
+              <span class="input-shell allocation-input">
+                <input id="tp2Allocation" name="tp2Allocation" aria-label="TP2 allocation" type="text" value="0" inputmode="decimal" autocomplete="off" disabled />
+                <span class="suffix">%</span>
+              </span>
+            </div>
+
+            <div class="target-row">
+              <label class="target-toggle">
+                <input id="tp3Enabled" name="tp3Enabled" type="checkbox" />
+                <span>TP3</span>
+              </label>
+              <input id="tp3Price" name="tp3Price" aria-label="TP3 price" type="text" value="" inputmode="decimal" autocomplete="off" disabled />
+              <span class="input-shell allocation-input">
+                <input id="tp3Allocation" name="tp3Allocation" aria-label="TP3 allocation" type="text" value="0" inputmode="decimal" autocomplete="off" disabled />
+                <span class="suffix">%</span>
+              </span>
+            </div>
+
+            <p class="target-allocation-note">
+              <span data-i18n="tp1AutomaticAllocation">TP1 automatically receives the remaining allocation.</span>
+              <strong id="tp1AllocationDisplay">TP1: 100%</strong>
+            </p>
+          </details>
+
+          <details id="exchangeExecutionPanel" class="panel exchange-panel" open>
+            <summary class="panel-heading compact">
+              <span class="panel-heading-copy">
+                <span class="eyebrow" data-i18n="venueCosts">Venue & costs</span>
+                <strong class="exchange-summary-title" data-i18n="exchangeExecution">Exchange & execution</strong>
+              </span>
+              <span class="exchange-summary-actions">
+                <span class="summary-arrow" aria-hidden="true">⌄</span>
+              </span>
+            </summary>
+
+            <div class="exchange-panel-content">
+              <div class="field-grid">
+              <label class="field">
+                <span data-i18n="exchange">Exchange</span>
+                <select id="exchange" name="exchange">
+                  <option value="binance">Binance USDⓈ-M</option>
+                  <option value="bybit">Bybit USDT Perp</option>
+                  <option value="okx" selected>OKX USDT-M</option>
+                  <option value="hyperliquid">Hyperliquid Perps</option>
+                  <option value="aster">Aster USDT Perp</option>
+                  <option value="gate">Gate.io USDT Perp</option>
+                  <option value="bitget">Bitget USDT-M</option>
+                  <option value="mexc">MEXC USDT-M</option>
+                  <option value="lighter">Lighter Perps</option>
+                  <option value="custom" data-i18n="customManual">Custom / Manual</option>
+                </select>
+              </label>
+
+              <label class="field">
+                <span data-i18n="feeTier">Fee tier</span>
+                <select id="feeTier" name="feeTier">
+                  <option value="standard" data-i18n="standardTier">Standard / VIP 0</option>
+                  <option value="custom" data-i18n="customRates">Custom rates</option>
+                </select>
+              </label>
+
+              <div class="fee-rate-pair" aria-live="polite">
+                <span>
+                  <small data-i18n="maker">Maker</small>
+                  <strong id="makerFeeDisplay">0.0200%</strong>
+                </span>
+                <span>
+                  <small data-i18n="taker">Taker</small>
+                  <strong id="takerFeeDisplay">0.0500%</strong>
+                </span>
+              </div>
+
+              <label class="field">
+                <span data-i18n="entryExecution">Entry execution</span>
+                <select id="entryExecution" name="entryExecution">
+                  <option value="taker" data-i18n="takerMarket">Taker / Market</option>
+                  <option value="maker" data-i18n="makerPostOnly" selected>Maker / Post-only</option>
+                </select>
+              </label>
+
+              <label class="field">
+                <span data-i18n="stopExecution">Stop execution</span>
+                <select id="stopExecution" name="stopExecution">
+                  <option value="stop-market" data-i18n="stopMarketRecommended" selected>Stop-Market / Recommended</option>
+                  <option value="stop-limit" data-i18n="stopLimit">Stop-Limit</option>
+                </select>
+              </label>
+
+              <label class="field">
+                <span data-i18n="stopTriggerSource">Stop trigger source</span>
+                <select id="stopTriggerSource" name="stopTriggerSource">
+                  <option value="mark" data-i18n="markPrice" selected>Mark Price</option>
+                  <option value="last" data-i18n="lastPrice">Last Price</option>
+                  <option value="index" data-i18n="indexPrice">Index Price</option>
+                </select>
+              </label>
+
+              <label id="stopLimitField" class="field is-hidden">
+                <span data-i18n="stopLimitPrice">Stop limit price</span>
+                <span class="input-shell">
+                  <input id="stopLimitPrice" name="stopLimitPrice" type="text" value="" inputmode="decimal" autocomplete="off" />
+                </span>
+              </label>
+
+              <label class="field">
+                <span data-i18n="targetExecution">Target execution</span>
+                <select id="targetExecution" name="targetExecution">
+                  <option value="maker" data-i18n="targetReduceOnlyLimit" selected>Reduce-Only Limit / Maker estimate</option>
+                  <option value="taker" data-i18n="targetReduceOnlyMarket">Reduce-Only Market / Taker</option>
+                </select>
+              </label>
+
+              <div class="field fee-refresh-field">
+                <span data-i18n="feeData">Fee data</span>
+                <button id="feeRefreshButton" class="fee-refresh-button" type="button">
+                  <span class="fee-refresh-icon" aria-hidden="true">↻</span>
+                  <span data-i18n="refreshFees">Refresh fees</span>
+                </button>
+              </div>
+              </div>
+
+              <div id="customFeeFields" class="field-grid custom-fees is-hidden">
+              <label class="field">
+                <span data-i18n="makerFee">Maker fee</span>
+                <span class="input-shell">
+                  <input id="makerFee" name="makerFee" type="text" value="0.02" inputmode="decimal" autocomplete="off" />
+                  <span class="suffix">%</span>
+                </span>
+              </label>
+              <label class="field">
+                <span data-i18n="takerFee">Taker fee</span>
+                <span class="input-shell">
+                  <input id="takerFee" name="takerFee" type="text" value="0.05" inputmode="decimal" autocomplete="off" />
+                  <span class="suffix">%</span>
+                </span>
+              </label>
+              </div>
+
+              <p class="helper" data-i18n="executionHelper">
+                Reduce-Only prevents a target from increasing or reversing the position. A Limit order is maker only when it rests in the order book.
+              </p>
+
+              <p class="source-note">
+                <span id="feeSourceText">OKX contract fee calculation</span>
+                <a id="feeSourceLink" href="https://www.binance.com/en/fee/futureFee" target="_blank" rel="noopener noreferrer">
+                  <span data-i18n="verifyRate">Verify your rate</span> ↗
+                </a>
+              </p>
+            </div>
+          </details>
+
+          <details class="panel details-panel">
+            <summary>
+              <span>
+                <span class="eyebrow" data-i18n="advanced">Advanced</span>
+                <strong data-i18n="executionCostsRules">Execution Costs & Exchange Rules</strong>
+                <small id="advancedSummaryStatus" data-i18n="includedInCalculation">Included in calculation</small>
+              </span>
+              <span class="summary-actions">
+                <button
+                  id="advancedToggle"
+                  class="advanced-switch active"
+                  type="button"
+                  role="switch"
+                  aria-checked="true"
+                  aria-label="Toggle advanced calculations"
+                >
+                  <span class="switch-track"><span class="switch-thumb"></span></span>
+                  <strong id="advancedToggleText">ON</strong>
+                </button>
+                <span class="summary-arrow" aria-hidden="true">⌄</span>
+              </span>
+            </summary>
+
+            <div class="details-content">
+              <div id="advancedOffNote" class="advanced-off-note is-hidden">
+                <strong data-i18n="advancedOffTitle">Simplified calculation is active</strong>
+                <span data-i18n="advancedOffBody">Slippage, funding, and exchange rounding are excluded. Isolated liquidation and leverage safety checks remain active.</span>
+              </div>
+
+              <section class="advanced-section">
+                <div class="advanced-section-heading">
+                  <div>
+                    <span class="eyebrow" data-i18n="executionCosts">Execution costs</span>
+                    <h3 data-i18n="slippageEstimate">Slippage estimate</h3>
+                  </div>
+                  <small data-i18n="limitSlippageHelper">Post-Only entry and target orders use 0% slippage automatically.</small>
+                </div>
+                <div class="field-grid compact-grid">
+                  <label class="field">
+                  <span data-i18n="entrySlippage">Entry slippage</span>
+                  <span class="input-shell">
+                    <input id="entrySlippage" name="entrySlippage" type="text" value="0.02" inputmode="decimal" autocomplete="off" />
+                    <span class="suffix">%</span>
+                  </span>
+                  </label>
+                  <label class="field">
+                  <span data-i18n="stopSlippage">Stop slippage</span>
+                  <span class="input-shell">
+                    <input id="stopSlippage" name="stopSlippage" type="text" value="0.03" inputmode="decimal" autocomplete="off" />
+                    <span class="suffix">%</span>
+                  </span>
+                  </label>
+                  <label class="field">
+                  <span data-i18n="targetSlippage">Target slippage</span>
+                  <span class="input-shell">
+                    <input id="targetSlippage" name="targetSlippage" type="text" value="0.01" inputmode="decimal" autocomplete="off" />
+                    <span class="suffix">%</span>
+                  </span>
+                  </label>
+                </div>
+              </section>
+
+              <section class="advanced-section">
+                <div class="advanced-section-heading">
+                  <div>
+                    <span class="eyebrow" data-i18n="fundingSection">Funding</span>
+                    <h3 data-i18n="fundingPlan">Funding plan</h3>
+                  </div>
+                </div>
+                <div class="field-grid compact-grid">
+                  <label class="field">
+                    <span data-i18n="crossFundingTime">Will this position cross a funding time?</span>
+                    <select id="fundingEnabled" name="fundingEnabled">
+                      <option value="no" data-i18n="no">No</option>
+                      <option value="yes" data-i18n="yes">Yes</option>
+                    </select>
+                  </label>
+                  <label class="field funding-dependent is-hidden">
+                    <span data-i18n="fundingRate">Funding rate / interval</span>
+                    <span class="input-shell">
+                      <input id="fundingRate" name="fundingRate" type="text" value="0" inputmode="decimal" autocomplete="off" />
+                      <span class="suffix">%</span>
+                    </span>
+                  </label>
+                  <label class="field funding-dependent is-hidden">
+                    <span data-i18n="fundingIntervals">Funding intervals held</span>
+                    <span class="input-shell">
+                      <input id="fundingIntervals" name="fundingIntervals" type="text" value="1" inputmode="numeric" autocomplete="off" />
+                      <span class="suffix">×</span>
+                    </span>
+                  </label>
+                  <div class="field action-field funding-dependent is-hidden">
+                    <span data-i18n="fundingOnline">Online funding</span>
+                    <button id="fetchFundingButton" class="secondary-button" type="button" data-i18n="fetchFunding">
+                      Fetch current rate
+                    </button>
+                  </div>
+                </div>
+                <p class="helper" data-i18n="fundingHelper">
+                  Positive funding usually means longs pay shorts. Credits never increase calculated position size.
+                </p>
+              </section>
+
+              <section class="advanced-section">
+                <div class="advanced-section-heading specs-heading">
+                  <div>
+                    <span class="eyebrow" data-i18n="exchangeRules">Exchange rules</span>
+                    <h3 data-i18n="contractSpecifications">Contract specifications</h3>
+                  </div>
+                  <span id="specStatus" class="spec-status waiting" data-i18n="genericSpecsIdle">Generic mode — enter a coin to verify specs</span>
+                </div>
+
+                <div class="specs-toolbar">
+                  <label class="field">
+                    <span data-i18n="specificationMode">Specification mode</span>
+                    <select id="specMode" name="specMode">
+                      <option value="auto" data-i18n="autoFromExchange">Auto from exchange</option>
+                      <option value="manual" data-i18n="manualOverride">Manual override</option>
+                    </select>
+                  </label>
+                  <a id="specSourceLink" class="spec-source is-hidden" href="#" target="_blank" rel="noopener noreferrer">
+                    <span data-i18n="viewSource">View source</span> ↗
+                  </a>
+                </div>
+
+                <div class="field-grid compact-grid contract-fields">
+                  <label class="field">
+                    <span data-i18n="orderQuantityUnit">Order quantity unit</span>
+                    <select id="quantityMode" name="quantityMode">
+                      <option value="base" data-i18n="baseCoin">Base coin</option>
+                      <option value="contracts" data-i18n="contracts">Contracts</option>
+                    </select>
+                  </label>
+                  <label class="field">
+                    <span data-i18n="contractSize">Contract size in base coin</span>
+                    <span class="input-shell">
+                      <input id="contractSize" name="contractSize" type="text" value="" inputmode="decimal" autocomplete="off" />
+                    </span>
+                  </label>
+                  <label class="field">
+                    <span data-i18n="maintenanceMargin">Maintenance margin rate</span>
+                    <span class="input-shell">
+                      <input id="maintenanceMargin" name="maintenanceMargin" type="text" value="0.4" inputmode="decimal" autocomplete="off" />
+                      <span class="suffix">%</span>
+                    </span>
+                  </label>
+                  <label class="field">
+                    <span data-i18n="quantityStep">Quantity / contract step</span>
+                    <span class="input-shell">
+                      <input id="quantityStep" name="quantityStep" type="text" value="" inputmode="decimal" autocomplete="off" />
+                    </span>
+                  </label>
+                  <label class="field">
+                    <span data-i18n="priceTick">Price tick</span>
+                    <span class="input-shell">
+                      <input id="priceTick" name="priceTick" type="text" value="" inputmode="decimal" autocomplete="off" />
+                    </span>
+                  </label>
+                  <label class="field">
+                    <span data-i18n="minimumQuantity">Minimum order quantity</span>
+                    <span class="input-shell">
+                      <input id="minimumQuantity" name="minimumQuantity" type="text" value="" inputmode="decimal" autocomplete="off" />
+                    </span>
+                  </label>
+                  <label class="field">
+                    <span data-i18n="minimumNotional">Minimum notional</span>
+                    <span class="input-shell">
+                      <span class="prefix">$</span>
+                      <input id="minimumNotional" name="minimumNotional" type="text" value="" inputmode="decimal" autocomplete="off" />
+                    </span>
+                  </label>
+                  <label class="field">
+                    <span data-i18n="maximumExchangeLeverage">Maximum exchange leverage</span>
+                    <span class="input-shell">
+                      <input id="maximumExchangeLeverage" name="maximumExchangeLeverage" type="text" value="" inputmode="decimal" autocomplete="off" />
+                      <span class="suffix">×</span>
+                    </span>
+                  </label>
+                </div>
+                <p id="specsHelper" class="helper" data-i18n="specsHelper">
+                  Auto mode uses public exchange instrument data and never requests an API key. Verify the final order quantity on the exchange.
+                </p>
+              </section>
+            </div>
+          </details>
+        </form>
+
+        <section class="results-column" aria-label="Trade calculation results">
+          <div id="alerts" class="alerts" aria-live="polite" aria-atomic="false"></div>
+
+          <section id="resultsPanel" class="results-panel" aria-labelledby="resultsHeading">
+            <div class="results-panel-heading">
+              <span>
+                <span class="eyebrow" data-i18n="tradeAnalysis">Trade analysis</span>
+                <strong id="resultsHeading" data-i18n="results">Results</strong>
+              </span>
+            </div>
+
+            <div class="results-content">
+          <div class="trade-controls">
+            <span class="direction-copy">
+              <span class="control-label" data-i18n="typeOfTrade">Type of trade</span>
+              <small id="autoDirectionHint" data-i18n="waitingDirection">Waiting for entry & stop</small>
+            </span>
+            <div class="segmented-control" role="status" aria-live="polite" aria-label="Trade direction">
+              <button id="longButton" type="button" data-side="long" tabindex="-1" aria-disabled="true">
+                <span aria-hidden="true">↑</span>
+                <span data-i18n="long">Long</span>
+              </button>
+              <button id="shortButton" type="button" data-side="short" tabindex="-1" aria-disabled="true">
+                <span aria-hidden="true">↓</span>
+                <span data-i18n="short">Short</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="context-strip">
+            <span>
+              <small data-i18n="sizingMode">Sizing mode</small>
+              <strong data-i18n="netRiskAtStop">Net risk at stop</strong>
+            </span>
+            <span>
+              <small data-i18n="marginMode">Margin mode</small>
+              <strong data-i18n="isolatedOnly">Isolated only</strong>
+            </span>
+            <span>
+              <small data-i18n="settlement">Settlement</small>
+              <input id="quoteCurrency" name="quoteCurrency" type="hidden" value="USDT" />
+              <strong id="settlementDisplay">USDT</strong>
+            </span>
+          </div>
+
+          <div class="metric-grid">
+            <article class="metric-card">
+              <span data-i18n="marginCost">Margin cost</span>
+              <strong id="marginCostValue">$—</strong>
+              <small id="marginUsageValue">—</small>
+            </article>
+            <article class="metric-card">
+              <span id="quantityMetricLabel" data-i18n="executableQuantity">Executable quantity</span>
+              <strong id="coinSizeValue">—</strong>
+              <small id="rawSizeValue">Raw coin: —</small>
+            </article>
+            <article class="metric-card">
+              <span data-i18n="positionAmount">Amount of position</span>
+              <strong id="positionValue">$—</strong>
+              <small data-i18n="totalNotional">Total position size</small>
+            </article>
+
+            <article class="metric-card">
+              <span data-i18n="grossRR">Gross R:R</span>
+              <strong id="grossRRValue">1:—</strong>
+              <small data-i18n="beforeCosts">Before costs</small>
+            </article>
+            <article class="metric-card featured">
+              <span data-i18n="netRR">Net R:R</span>
+              <strong id="netRRValue">1:—</strong>
+              <small data-i18n="afterCosts">After estimated costs</small>
+            </article>
+            <article class="metric-card risk-card">
+              <span data-i18n="netRisk">Net risk</span>
+              <strong id="netRiskValue">−$—</strong>
+              <small id="riskAccountValue">—</small>
+            </article>
+
+            <article class="metric-card profit-card">
+              <span data-i18n="netProfit">Net potential profit</span>
+              <strong id="netProfitValue">+$—</strong>
+              <small id="profitAccountValue">—% of account</small>
+            </article>
+            <article class="metric-card profit-card">
+              <span data-i18n="netROE">Net return on margin cost</span>
+              <strong id="netROEValue">—%</strong>
+              <small data-i18n="estimatedROE">Estimated ROE</small>
+            </article>
+            <article class="metric-card liquidation-card">
+              <span data-i18n="isolatedLiquidation">Est. liq price (isolated)</span>
+              <strong id="liquidationValue">$—</strong>
+              <small data-i18n="estimateOnly">Estimate only — verify on exchange</small>
+            </article>
+          </div>
+            </div>
+          </section>
+
+          <details id="advancedResultsPanel" class="result-details" open>
+            <summary>
+              <span data-i18n="advancedResults">Advanced results</span>
+              <span class="summary-arrow" aria-hidden="true">⌄</span>
+            </summary>
+            <div class="secondary-metrics">
+              <div><span data-i18n="grossRisk">Gross price risk</span><strong id="grossRiskValue">$—</strong></div>
+              <div><span data-i18n="grossProfit">Gross potential profit</span><strong id="grossProfitValue">$—</strong></div>
+              <div><span data-i18n="grossROE">Gross ROE</span><strong id="grossROEValue">—%</strong></div>
+              <div><span data-i18n="totalFees">Estimated trading fees</span><strong id="feesValue">$—</strong></div>
+              <div><span data-i18n="totalSlippage">Estimated slippage</span><strong id="slippageValue">$—</strong></div>
+              <div><span data-i18n="funding">Estimated funding</span><strong id="fundingValue">$—</strong></div>
+              <div><span data-i18n="breakEven">Break-even price</span><strong id="breakEvenValue">$—</strong></div>
+              <div><span data-i18n="breakEvenWinRate">Break-even win rate</span><strong id="winRateValue">—%</strong></div>
+              <div><span data-i18n="effectiveLeverage">Effective account leverage</span><strong id="effectiveLeverageValue">—×</strong></div>
+              <div><span data-i18n="freeBalance">Free balance after margin</span><strong id="freeBalanceValue">$—</strong></div>
+              <div><span data-i18n="openingCost">Opening cost incl. entry fee</span><strong id="openingCostValue">$—</strong></div>
+              <div><span data-i18n="amountFromCost">Amount from cost × leverage</span><strong id="amountFromCostValue">$—</strong></div>
+              <div><span data-i18n="maxEstimatedLeverage">Max estimated leverage</span><strong id="maxLeverageValue">—×</strong></div>
+              <div><span data-i18n="contractQuantity">Contract quantity</span><strong id="contractQuantityValue">—</strong></div>
+              <div><span data-i18n="crossMargin">Cross margin</span><strong data-i18n="crossUnsupported">Not supported — verify on exchange</strong></div>
+            </div>
+          </details>
+
+          <div class="action-bar">
+            <button id="resetButton" class="ghost-button" type="button" data-i18n="reset">Reset</button>
+            <button id="saveDraftButton" class="secondary-button" type="button" data-i18n="saveDraft">Save as draft</button>
+            <button id="saveTradeButton" class="primary-button" type="button" data-i18n="saveTrade">Save trade plan</button>
+          </div>
+
+          <section class="technical-note">
+            <h2 data-i18n="technicalNote">Technical note</h2>
+            <p data-i18n="technicalCopy">
+              This calculator is designed for one isolated-margin linear perpetual position. Its liquidation estimate excludes additional margin, other positions, cross-account equity, portfolio margin, and changing exchange risk tiers. Always verify the mark-price liquidation shown by the exchange.
+            </p>
+            <div class="note-links">
+              <a href="https://github.com/ridelrival/crypto-journal-data" target="_blank" rel="noopener noreferrer">
+                <span data-i18n="journalData">Journal data</span> ↗
+              </a>
+              <button id="downloadPlanButton" type="button" data-i18n="downloadPlan">Download current plan</button>
+            </div>
+          </section>
+        </section>
+      </div>
+    </main>
+
+    <dialog id="settingsDialog" class="modal settings-modal">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow" data-i18n="settings">Settings</p>
+          <h2 data-i18n="settingsMenu">Application settings</h2>
+        </div>
+        <button class="icon-button" data-close-dialog="settingsDialog" type="button" aria-label="Close">×</button>
+      </div>
+      <div class="settings-list">
+        <button id="settingsHistoryAction" class="settings-option" type="button">
+          <span class="settings-option-icon" aria-hidden="true">↗</span>
+          <span><strong data-i18n="history">History</strong><small data-i18n="historySettingsCopy">View saved trade plans</small></span>
+          <span aria-hidden="true">›</span>
+        </button>
+        <a class="settings-option" href="https://crypto-trade-journalzipzip--ridelrival98.replit.app/" target="_blank" rel="noopener noreferrer">
+          <span class="settings-option-icon" aria-hidden="true">↗</span>
+          <span><strong data-i18n="journal">Journal</strong><small data-i18n="journalSettingsCopy">Open full trade journal</small></span>
+          <span aria-hidden="true">›</span>
+        </a>
+        <button id="settingsLanguageAction" class="settings-option" type="button">
+          <span class="settings-option-icon" aria-hidden="true">◎</span>
+          <span><strong data-i18n="language">Language</strong><small id="settingsLanguageValue">EN</small></span>
+          <span aria-hidden="true">›</span>
+        </button>
+        <button id="settingsThemeAction" class="settings-option" type="button">
+          <span class="settings-option-icon" aria-hidden="true">◐</span>
+          <span><strong data-i18n="appearance">Appearance</strong><small id="settingsThemeValue">Dark</small></span>
+          <span aria-hidden="true">›</span>
+        </button>
+        <button id="settingsRefreshAction" class="settings-option" type="button">
+          <span class="settings-option-icon" aria-hidden="true">↻</span>
+          <span><strong data-i18n="refreshData">Refresh data</strong><small data-i18n="refreshSettingsCopy">Update app and exchange data</small></span>
+          <span aria-hidden="true">›</span>
+        </button>
+      </div>
+    </dialog>
+
+    <dialog id="historyDialog" class="modal">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow" data-i18n="localPrivate">Local & private</p>
+          <h2 data-i18n="historyJournal">History & journal handoff</h2>
+        </div>
+        <button class="icon-button" data-close-dialog="historyDialog" type="button" aria-label="Close">×</button>
+      </div>
+      <div class="modal-toolbar">
+        <button id="exportJsonButton" class="secondary-button" type="button">Export JSON</button>
+        <button id="exportCsvButton" class="secondary-button" type="button">Export CSV</button>
+        <label class="secondary-button file-button">
+          <span data-i18n="importJson">Import JSON</span>
+          <input id="importJsonInput" type="file" accept=".json,application/json" />
+        </label>
+        <a
+          class="primary-button"
+          href="https://crypto-trade-journalzipzip--ridelrival98.replit.app/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span data-i18n="openFullJournal">Open full journal</span> ↗
+        </a>
+      </div>
+      <p class="modal-note" data-i18n="historyStorageNote">
+        Plans are stored only in this browser. Export a backup before clearing browser data.
+      </p>
+      <div id="historyList" class="history-list"></div>
+      <div class="modal-footer">
+        <button id="clearHistoryButton" class="danger-button" type="button" data-i18n="clearHistory">Clear local history</button>
+      </div>
+    </dialog>
+
+    <dialog id="languageDialog" class="modal language-modal">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow" data-i18n="language">Language</p>
+          <h2 data-i18n="chooseLanguage">Choose your language</h2>
+        </div>
+        <button class="icon-button" data-close-dialog="languageDialog" type="button" aria-label="Close">×</button>
+      </div>
+      <label class="search-field">
+        <span aria-hidden="true">⌕</span>
+        <input id="languageSearch" type="search" placeholder="Search languages…" autocomplete="off" />
+      </label>
+      <div id="languageList" class="language-list" role="listbox" aria-label="Languages"></div>
+      <p class="modal-note" data-i18n="languageFallback">
+        English, Indonesian, and Japanese are available.
+      </p>
+    </dialog>
+
+    <dialog id="themeDialog" class="modal theme-modal">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow" data-i18n="appearance">Appearance</p>
+          <h2 data-i18n="chooseTheme">Choose theme</h2>
+        </div>
+        <button class="icon-button" data-close-dialog="themeDialog" type="button" aria-label="Close">×</button>
+      </div>
+      <div class="theme-list" role="listbox" aria-label="Themes">
+        <button class="theme-option" type="button" data-theme-option="dark" role="option">
+          <span aria-hidden="true">☾</span>
+          <span><strong data-i18n="darkTheme">Dark</strong><small data-i18n="darkThemeCopy">Low-light trading workspace</small></span>
+          <strong class="theme-check" aria-hidden="true">✓</strong>
+        </button>
+        <button class="theme-option" type="button" data-theme-option="light" role="option">
+          <span aria-hidden="true">☀</span>
+          <span><strong data-i18n="lightTheme">Light</strong><small data-i18n="lightThemeCopy">Bright daytime workspace</small></span>
+          <strong class="theme-check" aria-hidden="true">✓</strong>
+        </button>
+        <button class="theme-option" type="button" data-theme-option="pitch-black" role="option">
+          <span aria-hidden="true">●</span>
+          <span><strong data-i18n="pitchBlackTheme">Pitch Black</strong><small data-i18n="pitchBlackThemeCopy">Pure black background for OLED displays</small></span>
+          <strong class="theme-check" aria-hidden="true">✓</strong>
+        </button>
+      </div>
+    </dialog>
+
+    <dialog id="themedSelectDialog" class="modal themed-select-dialog">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow" data-i18n="chooseOption">Choose an option</p>
+          <h2 id="themedSelectTitle">Select</h2>
+        </div>
+        <button class="icon-button" data-close-dialog="themedSelectDialog" type="button" aria-label="Close">×</button>
+      </div>
+      <div id="themedSelectList" class="themed-select-list" role="listbox" aria-labelledby="themedSelectTitle"></div>
+    </dialog>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script src="./exchange-presets.js?v=44"></script>
+    <script src="./i18n.js?v=77"></script>
+    <script src="./calculator.js?v=44"></script>
+    <script src="./contract-specs.js?v=44"></script>
+    <script src="./exchange-max-leverage.js?v=67"></script>
+    <script src="./exchange-fee-rates.js?v=67"></script>
+    <script src="./app.js?v=85"></script>
+  </body>
 </html>
