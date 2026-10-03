@@ -145,6 +145,86 @@
     );
   }
 
+  function setupKeyboardScrollRestore() {
+    const numericSelector = 'input[inputmode="decimal"], input[inputmode="numeric"]';
+    const touchScreen = window.matchMedia("(pointer: coarse)");
+    let session = null;
+    let restoreTimer = 0;
+
+    const viewportHeight = () => window.visualViewport?.height || window.innerHeight;
+    const viewportWidth = () => window.visualViewport?.width || window.innerWidth;
+    const isNumericField = (element) => element?.matches?.(numericSelector);
+    const isSmallTouchScreen = () =>
+      touchScreen.matches && Math.min(window.innerWidth, window.innerHeight) <= 600;
+
+    function rememberPosition(event) {
+      if (session || !isSmallTouchScreen() || !isNumericField(event.target)) return;
+      if (event.target.disabled || event.target.readOnly) return;
+      if (event.target.closest("dialog")) return;
+      window.clearTimeout(restoreTimer);
+      session = {
+        scrollY: window.scrollY,
+        height: viewportHeight(),
+        width: viewportWidth(),
+        keyboardShown: false,
+      };
+    }
+
+    function keyboardHasClosed() {
+      if (!session) return false;
+      const heightDifference = session.height - viewportHeight();
+      return heightDifference < Math.max(90, session.height * 0.12);
+    }
+
+    function restorePosition() {
+      window.clearTimeout(restoreTimer);
+      restoreTimer = window.setTimeout(() => {
+        if (!session?.keyboardShown || !keyboardHasClosed()) return;
+        const savedScrollY = session.scrollY;
+        session = null;
+        window.requestAnimationFrame(() => {
+          window.requestAnimationFrame(() => {
+            window.scrollTo({ left: 0, top: savedScrollY, behavior: "auto" });
+          });
+        });
+      }, 120);
+    }
+
+    function checkViewport() {
+      if (!session) return;
+      if (Math.abs(viewportWidth() - session.width) > 60) {
+        // A rotation or window resize starts a new layout, so the old position is stale.
+        window.clearTimeout(restoreTimer);
+        session = null;
+        return;
+      }
+      const heightDifference = session.height - viewportHeight();
+      if (heightDifference > Math.max(120, session.height * 0.18)) {
+        session.keyboardShown = true;
+        window.clearTimeout(restoreTimer);
+      } else if (session.keyboardShown && keyboardHasClosed()) {
+        restorePosition();
+      }
+    }
+
+    document.addEventListener("pointerdown", rememberPosition, true);
+    document.addEventListener("focusin", rememberPosition, true);
+    document.addEventListener(
+      "focusout",
+      (event) => {
+        if (!isNumericField(event.target) || !session) return;
+        window.setTimeout(() => {
+          if (!session || isNumericField(document.activeElement)) return;
+          if (session.keyboardShown) restorePosition();
+          else session = null;
+        }, 250);
+      },
+      true,
+    );
+    window.visualViewport?.addEventListener("resize", checkViewport);
+    window.addEventListener("resize", checkViewport);
+  }
+
   function clearPointerFocus() {
     if (!usesPointerInput()) return;
     window.requestAnimationFrame(() => {
@@ -1129,19 +1209,15 @@
   function renderAlerts(result) {
     const alerts = $("alerts");
     alerts.replaceChildren();
-    const enteredLeverage = numeric(elements.leverage.value);
-    const maximumEstimatedLeverage = result.values?.maximumEstimatedLeverage;
-    const maximumLeverageIssue =
-      finite(maximumEstimatedLeverage) &&
-      maximumEstimatedLeverage > 0 &&
-      enteredLeverage > maximumEstimatedLeverage + 1e-9
-        ? {
-            type: "warning",
-            titleKey: "maxEstimatedLeverageWarning",
-            bodyKey: "maxEstimatedLeverageWarningBody",
-            vars: { entered: enteredLeverage, max: maximumEstimatedLeverage },
-          }
-        : null;
+    const maximumLeverageWarning = getMaximumLeverageWarning(result);
+    const maximumLeverageIssue = maximumLeverageWarning
+      ? {
+          type: "warning",
+          titleKey: "maxEstimatedLeverageWarning",
+          bodyKey: "maxEstimatedLeverageWarningBody",
+          vars: maximumLeverageWarning,
+        }
+      : null;
     const remainingWarningSlots = Math.max(
       0,
       4 - (maximumLeverageIssue ? 1 : 0) - result.errors.length,
@@ -1174,6 +1250,27 @@
     });
   }
 
+  function getMaximumLeverageWarning(result) {
+    const entered = numeric(elements.leverage.value);
+    const maximumEstimatedLeverage = result.values?.maximumEstimatedLeverage;
+    return (
+      finite(maximumEstimatedLeverage) &&
+      maximumEstimatedLeverage > 0 &&
+      entered > maximumEstimatedLeverage + 1e-9
+    )
+      ? { entered, max: maximumEstimatedLeverage }
+      : null;
+  }
+
+  function syncSafeLeverageStatus(result) {
+    const badge = $("safeLeverageStatus");
+    const warning = result && getMaximumLeverageWarning(result);
+    badge.hidden = !warning;
+    $("safeLeverageValue").textContent = warning
+      ? `${formatNumber(Math.floor(warning.max * 100) / 100, 0, 2)}×`
+      : "—";
+  }
+
   function blankMetrics() {
     metricIds.forEach((id) => {
       $(id).textContent = id.includes("Value") ? "—" : "$—";
@@ -1200,6 +1297,7 @@
     status.classList.add(result.valid ? "valid" : "invalid");
     status.textContent = I18n.t(result.valid ? "valid" : "invalid");
     syncTradeSideStatus(result.valid);
+    syncSafeLeverageStatus(result);
     $("saveTradeButton").disabled = !result.valid;
 
     if (!result.valid || !result.values || !finite(result.values.quantity)) {
@@ -1290,6 +1388,7 @@
       status.classList.remove("valid", "invalid");
       status.textContent = I18n.t("ready");
       syncTradeSideStatus(false);
+      syncSafeLeverageStatus(null);
       $("saveTradeButton").disabled = true;
       blankMetrics();
       return;
@@ -2201,6 +2300,7 @@
   function init() {
     I18n.apply();
     setupInputModality();
+    setupKeyboardScrollRestore();
     syncRefreshButtonLabel();
     syncFeeRefreshButtonLabel();
     arrangeInputPanels();

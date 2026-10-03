@@ -691,6 +691,75 @@ a {
   color: #ff6e73;
 }
 
+.safe-leverage-indicator {
+  display: inline-grid;
+  min-width: 0;
+  gap: 2px;
+  padding: 5px 8px;
+  border: 1px solid var(--amber-border);
+  border-radius: 10px;
+  background: var(--amber-soft);
+  color: var(--amber);
+  line-height: 1.1;
+  text-align: center;
+}
+
+.safe-leverage-indicator[hidden] {
+  display: none !important;
+}
+
+.safe-leverage-indicator small {
+  max-width: 110px;
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  white-space: normal;
+}
+
+.safe-leverage-indicator strong {
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+@media (max-width: 360px) {
+  #parametersPanel .panel-heading {
+    gap: 4px;
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+
+  #parametersPanel .panel-heading > div:first-child {
+    flex: 0 0 100px;
+  }
+
+  #parametersPanel .panel-heading h1 {
+    overflow-wrap: normal;
+    white-space: nowrap;
+  }
+
+  #parametersPanel .parameter-statuses {
+    gap: 4px;
+  }
+
+  #parametersPanel .status-pill {
+    padding: 3px 5px;
+    font-size: 10px;
+  }
+
+  #parametersPanel .safe-leverage-indicator {
+    width: 82px;
+    padding: 3px 4px;
+  }
+
+  #parametersPanel .safe-leverage-indicator small {
+    font-size: 8px;
+  }
+
+  #parametersPanel .safe-leverage-indicator strong {
+    font-size: 12px;
+  }
+}
+
 .allocation-pill.valid {
   border-color: var(--green-border);
   color: var(--green);
