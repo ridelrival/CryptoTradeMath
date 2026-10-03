@@ -16,8 +16,6 @@
   const ATTENTION_PANEL_KEY = "trademath-attention-panel-open";
   const ADVANCED_RESULTS_PANEL_KEY = "trademath-advanced-results-panel-open";
   const REFRESH_STATE_KEY = "trademath-refresh-state-v1";
-  const COMPACT_RESULTS_QUERY =
-    "(min-width: 540px) and (max-width: 611px) and (min-height: 540px) and (max-height: 611px)";
   const PHONE_RESULTS_QUERY = "(orientation: portrait) and (max-width: 500px)";
   const PORTRAIT_RESULTS_QUERY = "(orientation: portrait) and (max-width: 1120px)";
 
@@ -112,9 +110,7 @@
   let activeSelectControl = null;
   let themedSelectCloseTimer = null;
   let regularResultCards = null;
-  let regularAdvancedResultsOpen = null;
   let resultLayout = "regular";
-  let compactSeeMoreOpen = false;
 
   const SETTINGS_CHILD_DIALOG_IDS = ["historyDialog", "languageDialog", "themeDialog"];
 
@@ -899,10 +895,9 @@
 
     const exchangePanel = $("exchangeExecutionPanel");
     const parametersPanel = $("parametersPanel");
-    const seeMorePanel = $("seeMoreResultsPanel");
     const exitPlanPanel = $("exitPlanPanel");
     const advancedPanel = form.querySelector(".details-panel");
-    if (!exchangePanel || !parametersPanel || !seeMorePanel || !exitPlanPanel || !advancedPanel) return;
+    if (!exchangePanel || !parametersPanel || !exitPlanPanel || !advancedPanel) return;
 
     const primaryStack = document.createElement("div");
     primaryStack.id = "inputPrimaryStack";
@@ -915,54 +910,29 @@
     form.insertBefore(primaryStack, advancedPanel);
     form.insertBefore(parametersStack, advancedPanel);
     primaryStack.append(exchangePanel, exitPlanPanel, advancedPanel);
-    parametersStack.append(parametersPanel, seeMorePanel);
+    parametersStack.append(parametersPanel);
   }
 
   function syncResultLayout() {
-    const seeMorePanel = $("seeMoreResultsPanel");
-    const extraGrid = $("seeMoreMetricGrid");
-    const advancedHost = $("seeMoreAdvancedHost");
     const portraitHost = $("portraitPrimaryMetrics");
     const metricGrid = $("resultsPanel")?.querySelector(".metric-grid");
-    const advancedPanel = $("advancedResultsPanel");
-    const actionBar = document.querySelector(".results-column .action-bar");
-    if (!seeMorePanel || !extraGrid || !advancedHost || !portraitHost || !metricGrid || !advancedPanel || !actionBar) return;
+    if (!portraitHost || !metricGrid) return;
 
     regularResultCards ||= Array.from(metricGrid.children);
-    const nextLayout = window.matchMedia(COMPACT_RESULTS_QUERY).matches
-      ? "compact"
-      : window.matchMedia(PHONE_RESULTS_QUERY).matches
-        ? "phone"
-        : window.matchMedia(PORTRAIT_RESULTS_QUERY).matches
-          ? "portrait"
-          : "regular";
+    const nextLayout = window.matchMedia(PHONE_RESULTS_QUERY).matches
+      ? "phone"
+      : window.matchMedia(PORTRAIT_RESULTS_QUERY).matches
+        ? "portrait"
+        : "regular";
     if (resultLayout === nextLayout) return;
 
-    if (resultLayout === "compact") {
-      compactSeeMoreOpen = seeMorePanel.open;
-      seeMorePanel.open = false;
-      seeMorePanel.hidden = true;
-      metricGrid.append(...regularResultCards);
-      actionBar.before(advancedPanel);
-      advancedPanel.open = regularAdvancedResultsOpen;
-    } else if (resultLayout === "portrait" || resultLayout === "phone") {
+    if (resultLayout !== "regular") {
       metricGrid.append(...regularResultCards);
       portraitHost.hidden = true;
     }
 
     resultLayout = "regular";
-    if (nextLayout === "compact") {
-      regularAdvancedResultsOpen = advancedPanel.open;
-      regularResultCards.forEach((card, index) => {
-        if (![0, 4, 5].includes(index)) extraGrid.append(card);
-      });
-      metricGrid.append(regularResultCards[0], regularResultCards[5], regularResultCards[4]);
-      advancedHost.append(advancedPanel);
-      advancedPanel.open = true;
-      seeMorePanel.hidden = false;
-      seeMorePanel.open = compactSeeMoreOpen;
-      resultLayout = "compact";
-    } else if (nextLayout === "portrait" || nextLayout === "phone") {
+    if (nextLayout !== "regular") {
       portraitHost.append(regularResultCards[0], regularResultCards[5], regularResultCards[4]);
       if (nextLayout === "phone") portraitHost.append(regularResultCards[6]);
       portraitHost.hidden = false;
@@ -983,7 +953,7 @@
   }
 
   function persistAdvancedResultsPanelState(open = $("advancedResultsPanel")?.open) {
-    if (resultLayout === "compact" || typeof open !== "boolean") return;
+    if (typeof open !== "boolean") return;
     localStorage.setItem(ADVANCED_RESULTS_PANEL_KEY, open ? "open" : "closed");
   }
 
@@ -2244,11 +2214,6 @@
     $("exitPlanPanel").addEventListener("toggle", (event) => {
       localStorage.setItem(EXIT_PLAN_PANEL_KEY, event.currentTarget.open ? "open" : "closed");
     });
-    const seeMorePanel = $("seeMoreResultsPanel");
-    seeMorePanel.addEventListener("toggle", () => {
-      if (resultLayout === "compact" && seeMorePanel.open) $("advancedResultsPanel").open = true;
-    });
-    window.matchMedia(COMPACT_RESULTS_QUERY).addEventListener("change", syncResultLayout);
     window.matchMedia(PHONE_RESULTS_QUERY).addEventListener("change", syncResultLayout);
     window.matchMedia(PORTRAIT_RESULTS_QUERY).addEventListener("change", syncResultLayout);
     const advancedResultsPanel = $("advancedResultsPanel");

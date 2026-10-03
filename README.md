@@ -2,7 +2,7 @@
 
 An offline-first PWA for planning one **linear USDT/USDC perpetual-futures position in isolated margin**. It supports English, Indonesian, and Japanese, plus Dark and Light themes.
 
-Live site: <https://ridelrival.github.io/CryptoTradeMath-old/>
+Live site: <https://ridelrival.github.io/CryptoTradeMath/>
 
 ## Important scope
 
@@ -21,6 +21,13 @@ Live site: <https://ridelrival.github.io/CryptoTradeMath-old/>
 - Multiple take-profit targets and allocation percentages are supported.
 - Risk warnings begin at 5%; 10% and above is critical.
 - History is stored locally and can be exported as JSON or CSV.
+
+## Responsive interface
+
+- The layout adapts to the viewport; there is no dedicated 15 × 15 cm window mode.
+- On portrait phones, Margin Cost and Net Risk appear below the trade inputs, followed by Net R:R and Net Potential Profit. The remaining results stay in Trade Analysis.
+- A valid plan shows its LONG or SHORT direction beside Valid. When entered leverage exceeds the estimated safe limit, the header shows Invalid and Max Safe Leverage.
+- On small touch screens, closing the numeric keyboard restores the page position from before it opened.
 
 ## Execution Costs & Exchange Rules
 
