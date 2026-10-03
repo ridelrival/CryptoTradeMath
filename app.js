@@ -14,7 +14,6 @@
   const EXIT_PLAN_PANEL_KEY = "trademath-exit-plan-panel-open";
   const EXCHANGE_PANEL_KEY = "trademath-exchange-panel-open";
   const ATTENTION_PANEL_KEY = "trademath-attention-panel-open";
-  const ADVANCED_RESULTS_PANEL_KEY = "trademath-advanced-results-panel-open";
   const REFRESH_STATE_KEY = "trademath-refresh-state-v1";
   const PHONE_RESULTS_QUERY = "(orientation: portrait) and (max-width: 500px)";
   const PORTRAIT_RESULTS_QUERY = "(orientation: portrait) and (max-width: 1120px)";
@@ -111,6 +110,7 @@
   let themedSelectCloseTimer = null;
   let regularResultCards = null;
   let resultLayout = "regular";
+  let portraitTargetsEnabled = false;
 
   const SETTINGS_CHILD_DIALOG_IDS = ["historyDialog", "languageDialog", "themeDialog"];
 
@@ -915,6 +915,7 @@
 
   function syncResultLayout() {
     const portraitHost = $("portraitPrimaryMetrics");
+    const tradeResultsHeading = $("portraitTradeResultsHeading");
     const metricGrid = $("resultsPanel")?.querySelector(".metric-grid");
     if (!portraitHost || !metricGrid) return;
 
@@ -924,11 +925,13 @@
       : window.matchMedia(PORTRAIT_RESULTS_QUERY).matches
         ? "portrait"
         : "regular";
+    syncPortraitTargets();
     if (resultLayout === nextLayout) return;
 
     if (resultLayout !== "regular") {
       metricGrid.append(...regularResultCards);
       portraitHost.hidden = true;
+      tradeResultsHeading.hidden = true;
     }
 
     resultLayout = "regular";
@@ -936,25 +939,39 @@
       portraitHost.append(regularResultCards[0], regularResultCards[5], regularResultCards[4]);
       if (nextLayout === "phone") portraitHost.append(regularResultCards[6]);
       portraitHost.hidden = false;
+      tradeResultsHeading.hidden = false;
       resultLayout = nextLayout;
     }
+  }
+
+  function portraitTargetsMode() {
+    return window.matchMedia(PORTRAIT_RESULTS_QUERY).matches;
+  }
+
+  function targetsActive() {
+    return !portraitTargetsMode() || portraitTargetsEnabled;
+  }
+
+  function syncPortraitTargets() {
+    const portrait = portraitTargetsMode();
+    const active = targetsActive();
+    $("exitPlanPanel").hidden = portrait && !active;
+    const button = $("tpTargetsToggle");
+    button.setAttribute("aria-checked", String(active));
+    button.textContent = active ? "ON" : "OFF";
+    $("tpTargetsSettingsButton").setAttribute("aria-label", I18n.t("tpTargetsSettings"));
+    button.setAttribute("aria-label", I18n.t("tpTargetsSetting"));
+  }
+
+  function closeTpTargetsMenu() {
+    $("tpTargetsMenu").hidden = true;
+    $("tpTargetsSettingsButton").setAttribute("aria-expanded", "false");
   }
 
   function restoreExitPlanPanelState() {
     const panel = $("exitPlanPanel");
     if (!panel) return;
     panel.open = localStorage.getItem(EXIT_PLAN_PANEL_KEY) !== "closed";
-  }
-
-  function restoreAdvancedResultsPanelState() {
-    const panel = $("advancedResultsPanel");
-    if (!panel) return;
-    panel.open = localStorage.getItem(ADVANCED_RESULTS_PANEL_KEY) !== "closed";
-  }
-
-  function persistAdvancedResultsPanelState(open = $("advancedResultsPanel")?.open) {
-    if (typeof open !== "boolean") return;
-    localStorage.setItem(ADVANCED_RESULTS_PANEL_KEY, open ? "open" : "closed");
   }
 
   function scheduleSpecsFetch(force = false) {
@@ -1057,8 +1074,8 @@
 
   function updateAutomaticTp1Allocation() {
     const secondaryAllocation =
-      (elements.tp2Enabled.checked ? numeric(elements.tp2Allocation.value) : 0) +
-      (elements.tp3Enabled.checked ? numeric(elements.tp3Allocation.value) : 0);
+      (targetsActive() && elements.tp2Enabled.checked ? numeric(elements.tp2Allocation.value) : 0) +
+      (targetsActive() && elements.tp3Enabled.checked ? numeric(elements.tp3Allocation.value) : 0);
     const tp1Allocation = Math.max(0, 100 - secondaryAllocation);
     elements.tp1Allocation.value = formatEditableNumber(tp1Allocation);
     $("tp1AllocationDisplay").textContent =
@@ -1145,15 +1162,15 @@
         },
         {
           label: "TP2",
-          enabled: elements.tp2Enabled.checked,
+          enabled: targetsActive() && elements.tp2Enabled.checked,
           price: numeric(elements.tp2Price.value),
-          allocation: numeric(elements.tp2Allocation.value),
+          allocation: targetsActive() ? numeric(elements.tp2Allocation.value) : 0,
         },
         {
           label: "TP3",
-          enabled: elements.tp3Enabled.checked,
+          enabled: targetsActive() && elements.tp3Enabled.checked,
           price: numeric(elements.tp3Price.value),
-          allocation: numeric(elements.tp3Allocation.value),
+          allocation: targetsActive() ? numeric(elements.tp3Allocation.value) : 0,
         },
       ],
     };
@@ -1201,7 +1218,7 @@
 
     combined.slice(0, 4).forEach((issue) => {
       const article = document.createElement("article");
-      article.className = `alert alert-${issue.type}`;
+      article.className = `alert alert-${issue.severity === "critical" ? "critical" : issue.type}`;
 
       const icon = document.createElement("span");
       icon.className = "alert-icon";
@@ -2215,17 +2232,25 @@
       localStorage.setItem(EXIT_PLAN_PANEL_KEY, event.currentTarget.open ? "open" : "closed");
     });
     window.matchMedia(PHONE_RESULTS_QUERY).addEventListener("change", syncResultLayout);
-    window.matchMedia(PORTRAIT_RESULTS_QUERY).addEventListener("change", syncResultLayout);
-    const advancedResultsPanel = $("advancedResultsPanel");
-    advancedResultsPanel.querySelector("summary")?.addEventListener("click", () => {
-      persistAdvancedResultsPanelState(!advancedResultsPanel.open);
+    window.matchMedia(PORTRAIT_RESULTS_QUERY).addEventListener("change", () => {
+      syncResultLayout();
+      calculateAndRender();
     });
-    advancedResultsPanel.addEventListener("toggle", () => {
-      persistAdvancedResultsPanelState(advancedResultsPanel.open);
+    $("tpTargetsSettingsButton").addEventListener("click", () => {
+      const menu = $("tpTargetsMenu");
+      menu.hidden = !menu.hidden;
+      $("tpTargetsSettingsButton").setAttribute("aria-expanded", String(!menu.hidden));
     });
-    window.addEventListener("pagehide", () => persistAdvancedResultsPanelState());
-    document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "hidden") persistAdvancedResultsPanelState();
+    $("tpTargetsToggle").addEventListener("click", () => {
+      portraitTargetsEnabled = !portraitTargetsEnabled;
+      syncPortraitTargets();
+      calculateAndRender();
+    });
+    document.addEventListener("click", (event) => {
+      if (!event.target.closest(".field-target")) closeTpTargetsMenu();
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closeTpTargetsMenu();
     });
     elements.tp2Enabled.addEventListener("change", () => handleTargetToggle(2));
     elements.tp3Enabled.addEventListener("change", () => handleTargetToggle(3));
@@ -2257,6 +2282,7 @@
       syncRefreshButtonLabel();
       syncFeeRefreshButtonLabel();
       syncAdvancedControls();
+      syncPortraitTargets();
       renderExchangeMaxLeverage();
       calculateAndRender();
     });
@@ -2275,7 +2301,6 @@
     restoreAttentionPanelState();
     restoreExitPlanPanelState();
     restoreExchangePanelState();
-    restoreAdvancedResultsPanelState();
     syncResultLayout();
     setupDialogs();
     setupEvents();

@@ -19,13 +19,16 @@ Live site: <https://ridelrival.github.io/CryptoTradeMath/>
 - A single dot is always decimal: `70.345` means seventy point three-four-five, `0.7234` remains below one, and `1.000` means one. Use `1,000` or `1000` for one thousand. Mixed formats such as `35,723.00` and `35.723,00` are also accepted.
 - Gross risk, net risk, fees, potential profit, R:R, ROE, required margin, effective leverage, liquidation, and maximum safe leverage are shown separately.
 - Multiple take-profit targets and allocation percentages are supported.
-- Risk warnings begin at 5%; 10% and above is critical.
+- Risk warnings begin at 3%; 5% and above is critical and displayed in red.
 - History is stored locally and can be exported as JSON or CSV.
 
 ## Responsive interface
 
 - The layout adapts to the viewport; there is no dedicated 15 × 15 cm window mode.
 - On portrait phones, Margin Cost and Net Risk appear below the trade inputs, followed by Net R:R and Net Potential Profit. The remaining results stay in Trade Analysis.
+- A Trade Results heading separates the existing portrait metric cards from the trade inputs.
+- The Take Profit gear opens a TP Targets ON/OFF switch in portrait layouts. OFF is the default: Exit Plan is hidden and TP2/TP3 are excluded from calculation, while their entered values remain available when the switch returns to ON.
+- All former Advanced Results metrics now appear inside Trade Analysis Results, without a separate Advanced Results panel.
 - A valid plan shows its LONG or SHORT direction beside Valid. When entered leverage exceeds the estimated safe limit, the header shows Invalid and Max Safe Leverage.
 - On small touch screens, closing the numeric keyboard restores the page position from before it opened.
 

@@ -472,14 +472,15 @@
       });
     }
 
-    if (effectiveRiskPercent >= 10) {
+    if (effectiveRiskPercent >= 5) {
       warnings.push({
         type: "warning",
+        severity: "critical",
         titleKey: "riskCritical",
         bodyKey: "riskCriticalBody",
         vars: { risk: effectiveRiskPercent },
       });
-    } else if (effectiveRiskPercent >= 5) {
+    } else if (effectiveRiskPercent >= 3) {
       warnings.push({
         type: "warning",
         titleKey: "riskWarning",

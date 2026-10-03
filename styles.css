@@ -779,6 +779,95 @@ a {
   gap: 8px;
 }
 
+.field-label-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.field-label-row > label {
+  cursor: text;
+}
+
+.tp-targets-settings-button {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 25px;
+  height: 25px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--input-bg);
+  color: var(--field-label);
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.tp-targets-menu[hidden],
+.portrait-trade-results-heading[hidden] {
+  display: none !important;
+}
+
+.tp-targets-menu {
+  position: absolute;
+  z-index: 10;
+  top: 29px;
+  right: 0;
+  display: flex;
+  min-width: 145px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 10px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface);
+  box-shadow: 0 12px 30px rgb(0 0 0 / 30%);
+  color: var(--content-strong);
+  white-space: nowrap;
+}
+
+.tp-targets-menu > button {
+  min-width: 42px;
+  padding: 5px 7px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--input-bg);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.tp-targets-menu > button[aria-checked="true"] {
+  border-color: var(--green-border);
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.portrait-trade-results-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 clamp(14px, 2.2vw, 24px) 15px;
+  color: var(--field-label);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.portrait-trade-results-heading::before,
+.portrait-trade-results-heading::after {
+  height: 1px;
+  flex: 1;
+  background: var(--border);
+  content: "";
+}
+
 .instrument-field {
   grid-column: auto;
 }
@@ -1610,13 +1699,15 @@ details[open] > summary .summary-arrow {
   font-size: 13px;
 }
 
-.alert-error {
+.alert-error,
+.alert-critical {
   border-color: var(--red-border);
   background: #2c1519;
   color: #ff9bad;
 }
 
-.alert-error .alert-icon {
+.alert-error .alert-icon,
+.alert-critical .alert-icon {
   background: var(--red-soft);
 }
 
@@ -1808,6 +1899,7 @@ details[open] > summary .summary-arrow {
 .secondary-metrics {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0 -18px -18px;
   border-top: 1px solid var(--border);
 }
 
@@ -2488,7 +2580,8 @@ body.dialog-stack-open .modal {
   color: #b52643;
 }
 
-:root[data-theme="light"] .alert-error {
+:root[data-theme="light"] .alert-error,
+:root[data-theme="light"] .alert-critical {
   background: #fff3f5;
   color: #a9223d;
 }
@@ -3026,6 +3119,10 @@ body.dialog-stack-open .modal {
     padding: 12px 10px;
   }
 
+  .secondary-metrics {
+    margin: 0 -10px -12px;
+  }
+
   .metric-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 9px;
@@ -3077,6 +3174,12 @@ body.dialog-stack-open .modal {
 }
 
 /* Match portrait phone result cards to the Trade Plan field dimensions. */
+@media (orientation: portrait) and (max-width: 1120px) {
+  .tp-targets-settings-button {
+    display: inline-flex;
+  }
+}
+
 @media (orientation: portrait) and (max-width: 500px) {
   #parametersPanel .field > span:first-child {
     min-height: 1.25em;
@@ -3084,6 +3187,11 @@ body.dialog-stack-open .modal {
 
   #portraitPrimaryMetrics {
     gap: 12px 8px;
+    margin-right: 14px;
+    margin-left: 14px;
+  }
+
+  #portraitTradeResultsHeading {
     margin-right: 14px;
     margin-left: 14px;
   }

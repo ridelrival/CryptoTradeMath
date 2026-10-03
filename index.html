@@ -35,7 +35,7 @@
     <link rel="manifest" href="./manifest.webmanifest" />
     <link rel="icon" type="image/png" href="./assets/icons/favicon-64.png" />
     <link rel="apple-touch-icon" href="./assets/icons/icon-192.png" />
-    <link rel="stylesheet" href="./styles.css?v=89" />
+    <link rel="stylesheet" href="./styles.css?v=90" />
     <title>Crypto TradeMath</title>
   </head>
   <body>
@@ -220,14 +220,22 @@
                 </span>
               </label>
 
-              <label class="field field-target">
-                <span data-i18n="takeProfitOne">Take profit</span>
+              <div class="field field-target">
+                <span class="field-label-row">
+                  <label for="tp1Price" data-i18n="takeProfitOne">Take profit</label>
+                  <button id="tpTargetsSettingsButton" class="tp-targets-settings-button" type="button" aria-label="TP Targets settings" aria-expanded="false" aria-controls="tpTargetsMenu">⚙</button>
+                  <span id="tpTargetsMenu" class="tp-targets-menu" hidden>
+                    <span data-i18n="tpTargetsSetting">TP Targets</span>
+                    <button id="tpTargetsToggle" type="button" role="switch" aria-checked="false">OFF</button>
+                  </span>
+                </span>
                 <span class="input-shell">
                   <input id="tp1Price" name="tp1Price" type="text" value="" inputmode="decimal" autocomplete="off" />
                 </span>
-              </label>
+              </div>
 
             </div>
+            <div id="portraitTradeResultsHeading" class="portrait-trade-results-heading" hidden><span data-i18n="tradeResults">Trade Results</span></div>
             <div id="portraitPrimaryMetrics" class="portrait-primary-metrics" hidden></div>
             <p class="number-format-note" data-i18n="numberFormatHint">
               International number formats are accepted and normalized after you leave a field.
@@ -687,32 +695,25 @@
               <small data-i18n="estimateOnly">Estimate only — verify on exchange</small>
             </article>
           </div>
+          <div class="secondary-metrics">
+            <div><span data-i18n="grossRisk">Gross price risk</span><strong id="grossRiskValue">$—</strong></div>
+            <div><span data-i18n="grossProfit">Gross potential profit</span><strong id="grossProfitValue">$—</strong></div>
+            <div><span data-i18n="grossROE">Gross ROE</span><strong id="grossROEValue">—%</strong></div>
+            <div><span data-i18n="totalFees">Estimated trading fees</span><strong id="feesValue">$—</strong></div>
+            <div><span data-i18n="totalSlippage">Estimated slippage</span><strong id="slippageValue">$—</strong></div>
+            <div><span data-i18n="funding">Estimated funding</span><strong id="fundingValue">$—</strong></div>
+            <div><span data-i18n="breakEven">Break-even price</span><strong id="breakEvenValue">$—</strong></div>
+            <div><span data-i18n="breakEvenWinRate">Break-even win rate</span><strong id="winRateValue">—%</strong></div>
+            <div><span data-i18n="effectiveLeverage">Effective account leverage</span><strong id="effectiveLeverageValue">—×</strong></div>
+            <div><span data-i18n="freeBalance">Free balance after margin</span><strong id="freeBalanceValue">$—</strong></div>
+            <div><span data-i18n="openingCost">Opening cost incl. entry fee</span><strong id="openingCostValue">$—</strong></div>
+            <div><span data-i18n="amountFromCost">Amount from cost × leverage</span><strong id="amountFromCostValue">$—</strong></div>
+            <div><span data-i18n="maxEstimatedLeverage">Max estimated leverage</span><strong id="maxLeverageValue">—×</strong></div>
+            <div><span data-i18n="contractQuantity">Contract quantity</span><strong id="contractQuantityValue">—</strong></div>
+            <div><span data-i18n="crossMargin">Cross margin</span><strong data-i18n="crossUnsupported">Not supported — verify on exchange</strong></div>
+          </div>
             </div>
           </section>
-
-          <details id="advancedResultsPanel" class="result-details" open>
-            <summary>
-              <span data-i18n="advancedResults">Advanced results</span>
-              <span class="summary-arrow" aria-hidden="true">⌄</span>
-            </summary>
-            <div class="secondary-metrics">
-              <div><span data-i18n="grossRisk">Gross price risk</span><strong id="grossRiskValue">$—</strong></div>
-              <div><span data-i18n="grossProfit">Gross potential profit</span><strong id="grossProfitValue">$—</strong></div>
-              <div><span data-i18n="grossROE">Gross ROE</span><strong id="grossROEValue">—%</strong></div>
-              <div><span data-i18n="totalFees">Estimated trading fees</span><strong id="feesValue">$—</strong></div>
-              <div><span data-i18n="totalSlippage">Estimated slippage</span><strong id="slippageValue">$—</strong></div>
-              <div><span data-i18n="funding">Estimated funding</span><strong id="fundingValue">$—</strong></div>
-              <div><span data-i18n="breakEven">Break-even price</span><strong id="breakEvenValue">$—</strong></div>
-              <div><span data-i18n="breakEvenWinRate">Break-even win rate</span><strong id="winRateValue">—%</strong></div>
-              <div><span data-i18n="effectiveLeverage">Effective account leverage</span><strong id="effectiveLeverageValue">—×</strong></div>
-              <div><span data-i18n="freeBalance">Free balance after margin</span><strong id="freeBalanceValue">$—</strong></div>
-              <div><span data-i18n="openingCost">Opening cost incl. entry fee</span><strong id="openingCostValue">$—</strong></div>
-              <div><span data-i18n="amountFromCost">Amount from cost × leverage</span><strong id="amountFromCostValue">$—</strong></div>
-              <div><span data-i18n="maxEstimatedLeverage">Max estimated leverage</span><strong id="maxLeverageValue">—×</strong></div>
-              <div><span data-i18n="contractQuantity">Contract quantity</span><strong id="contractQuantityValue">—</strong></div>
-              <div><span data-i18n="crossMargin">Cross margin</span><strong data-i18n="crossUnsupported">Not supported — verify on exchange</strong></div>
-            </div>
-          </details>
 
           <div class="action-bar">
             <button id="resetButton" class="ghost-button" type="button" data-i18n="reset">Reset</button>
@@ -865,11 +866,11 @@
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
     <script src="./exchange-presets.js?v=44"></script>
-    <script src="./i18n.js?v=78"></script>
-    <script src="./calculator.js?v=44"></script>
+    <script src="./i18n.js?v=79"></script>
+    <script src="./calculator.js?v=45"></script>
     <script src="./contract-specs.js?v=44"></script>
     <script src="./exchange-max-leverage.js?v=67"></script>
     <script src="./exchange-fee-rates.js?v=67"></script>
-    <script src="./app.js?v=90"></script>
+    <script src="./app.js?v=91"></script>
   </body>
 </html>
