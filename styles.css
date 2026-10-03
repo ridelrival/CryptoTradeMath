@@ -792,18 +792,27 @@ a {
 }
 
 .tp-targets-settings-button {
+  position: absolute;
+  top: 0;
+  right: 0;
   display: none;
   align-items: center;
   justify-content: center;
-  width: 25px;
-  height: 25px;
+  width: 18px;
+  height: 18px;
   padding: 0;
   border: 1px solid var(--border);
-  border-radius: 7px;
+  border-radius: 5px;
   background: var(--input-bg);
   color: var(--field-label);
-  font-size: 16px;
+  font-size: 12px;
   cursor: pointer;
+}
+
+.tp-targets-settings-button::before {
+  position: absolute;
+  inset: -5px;
+  content: "";
 }
 
 .tp-targets-menu[hidden],
@@ -814,7 +823,7 @@ a {
 .tp-targets-menu {
   position: absolute;
   z-index: 10;
-  top: 29px;
+  top: 22px;
   right: 0;
   display: flex;
   min-width: 145px;

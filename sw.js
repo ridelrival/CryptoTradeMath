@@ -1,10 +1,10 @@
 "use strict";
 
-const CACHE_NAME = "crypto-trademath-v91";
+const CACHE_NAME = "crypto-trademath-v92";
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./styles.css?v=90",
+  "./styles.css?v=91",
   "./exchange-presets.js?v=44",
   "./i18n.js?v=79",
   "./calculator.js?v=45",
