@@ -136,9 +136,16 @@ html {
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
+  scrollbar-width: none;
   background: var(--bg);
   scroll-behavior: smooth;
   transition: background-color var(--theme-speed) ease-out;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
+  width: 0;
 }
 
 body {
@@ -2057,7 +2064,6 @@ details[open] > summary .summary-arrow {
 html.dialog-stack-open {
   overflow: hidden;
   overscroll-behavior: none;
-  scrollbar-gutter: stable;
 }
 
 html.dialog-scroll-restoring {
