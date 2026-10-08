@@ -15,6 +15,7 @@
   const EXCHANGE_PANEL_KEY = "trademath-exchange-panel-open";
   const ATTENTION_PANEL_KEY = "trademath-attention-panel-open";
   const REFRESH_STATE_KEY = "trademath-refresh-state-v1";
+  const DESKTOP_WINDOW_SIZE_KEY = "trademath-desktop-window-size-v1";
   const PHONE_RESULTS_QUERY = "(orientation: portrait) and (max-width: 500px)";
   const PORTRAIT_RESULTS_QUERY = "(orientation: portrait) and (max-width: 1120px)";
 
@@ -139,6 +140,132 @@
       },
       true,
     );
+  }
+
+  function setupDesktopWindowSize() {
+    if (!window.matchMedia("(display-mode: standalone)").matches) return;
+    if (!window.matchMedia("(pointer: fine)").matches) return;
+
+    let saved = null;
+    try {
+      saved = JSON.parse(localStorage.getItem(DESKTOP_WINDOW_SIZE_KEY) || "null");
+    } catch {
+      // An invalid old preference should not prevent the app from opening.
+    }
+
+    const validSize =
+      Number.isFinite(saved?.width) &&
+      Number.isFinite(saved?.height) &&
+      saved.width >= 320 &&
+      saved.height >= 400;
+    let ready = !validSize;
+    let resizeTimer = 0;
+    let resizedAfterLaunch = false;
+
+    function rememberSize() {
+      localStorage.setItem(
+        DESKTOP_WINDOW_SIZE_KEY,
+        JSON.stringify({
+          width: window.outerWidth,
+          height: window.outerHeight,
+          contentWidth: window.innerWidth,
+        }),
+      );
+    }
+
+    function keepSavedPhoneWidth() {
+      const contentWidth = saved?.contentWidth;
+      if (
+        Number.isFinite(contentWidth) &&
+        contentWidth >= 320 &&
+        contentWidth <= 500 &&
+        window.innerWidth > contentWidth &&
+        window.innerWidth <= 500 &&
+        window.innerWidth - contentWidth <= 80
+      ) {
+        document.documentElement.style.setProperty("--saved-phone-width", `${contentWidth}px`);
+        document.documentElement.classList.add("saved-phone-width");
+      }
+    }
+
+    window.addEventListener("resize", () => {
+      if (!ready) return;
+      document.documentElement.classList.remove("saved-phone-width");
+      resizedAfterLaunch = true;
+      window.clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(rememberSize, 300);
+    });
+    window.addEventListener("pagehide", () => {
+      if (!validSize || resizedAfterLaunch) rememberSize();
+    });
+
+    if (validSize) {
+      window.requestAnimationFrame(() => {
+        try {
+          // Chrome may reject this for an installed PWA; keep the saved size if it does.
+          window.resizeTo(
+            Math.min(saved.width, window.screen.availWidth),
+            Math.min(saved.height, window.screen.availHeight),
+          );
+        } catch {
+          // Window placement is controlled by the browser and operating system.
+        }
+        window.setTimeout(() => {
+          ready = true;
+          keepSavedPhoneWidth();
+        }, 1000);
+      });
+    }
+  }
+
+  function setupDesktopDragScroll() {
+    const narrowWindow = window.matchMedia("(max-width: 500px) and (pointer: fine)");
+    const interactive =
+      'a, button, input, textarea, select, label, summary, [role="button"], [role="combobox"], [role="slider"], [role="switch"], [contenteditable], [draggable="true"]';
+    let drag = null;
+
+    function finishDrag() {
+      if (!drag) return;
+      document.documentElement.classList.remove("mouse-drag-scrolling");
+      drag = null;
+    }
+
+    document.addEventListener("pointerdown", (event) => {
+      if (!narrowWindow.matches || event.pointerType !== "mouse" || event.button !== 0) return;
+      if (event.target.closest(interactive) || event.target.closest("dialog[open]")) return;
+      drag = {
+        id: event.pointerId,
+        x: event.clientX,
+        y: event.clientY,
+        scrollY: window.scrollY,
+        active: false,
+      };
+    });
+
+    window.addEventListener(
+      "pointermove",
+      (event) => {
+        if (!drag || event.pointerId !== drag.id) return;
+        if (!(event.buttons & 1)) {
+          finishDrag();
+          return;
+        }
+        const dx = event.clientX - drag.x;
+        const dy = event.clientY - drag.y;
+        if (!drag.active) {
+          if (Math.abs(dy) < 6 || Math.abs(dy) <= Math.abs(dx)) return;
+          drag.active = true;
+          document.documentElement.classList.add("mouse-drag-scrolling");
+          window.getSelection()?.removeAllRanges();
+        }
+        event.preventDefault();
+        window.scrollTo({ top: drag.scrollY - dy, behavior: "instant" });
+      },
+      { passive: false },
+    );
+    window.addEventListener("pointerup", finishDrag);
+    window.addEventListener("pointercancel", finishDrag);
+    window.addEventListener("blur", finishDrag);
   }
 
   function setupKeyboardScrollRestore() {
@@ -2291,6 +2418,8 @@
   function init() {
     I18n.apply();
     setupInputModality();
+    setupDesktopWindowSize();
+    setupDesktopDragScroll();
     setupKeyboardScrollRestore();
     syncRefreshButtonLabel();
     syncFeeRefreshButtonLabel();

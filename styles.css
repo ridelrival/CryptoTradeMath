@@ -148,6 +148,20 @@ body::-webkit-scrollbar {
   width: 0;
 }
 
+html.mouse-drag-scrolling {
+  scroll-behavior: auto;
+}
+
+html.mouse-drag-scrolling * {
+  cursor: grabbing !important;
+  user-select: none !important;
+}
+
+html.saved-phone-width body {
+  width: min(100%, var(--saved-phone-width));
+  margin-inline: auto;
+}
+
 body {
   width: 100%;
   max-width: 100%;
