@@ -157,9 +157,8 @@ html.mouse-drag-scrolling * {
   user-select: none !important;
 }
 
-html.saved-phone-width body {
-  width: min(100%, var(--saved-phone-width));
-  margin-inline: auto;
+html.restoring-scroll-position {
+  scroll-behavior: auto;
 }
 
 body {
@@ -813,21 +812,26 @@ a {
 }
 
 .tp-targets-settings-button {
-  position: absolute;
-  top: 0;
-  right: 18px;
+  position: relative;
   display: none;
   align-items: center;
   justify-content: center;
   width: 18px;
   height: 18px;
+  flex: none;
+  margin-right: 18px;
   padding: 0;
   border: 1px solid var(--border);
   border-radius: 5px;
   background: var(--input-bg);
   color: var(--field-label);
-  font-size: 12px;
   cursor: pointer;
+}
+
+.tp-targets-settings-button svg {
+  display: block;
+  width: 14px;
+  height: 14px;
 }
 
 .tp-targets-settings-button::before {

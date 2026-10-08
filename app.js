@@ -16,6 +16,7 @@
   const ATTENTION_PANEL_KEY = "trademath-attention-panel-open";
   const REFRESH_STATE_KEY = "trademath-refresh-state-v1";
   const DESKTOP_WINDOW_SIZE_KEY = "trademath-desktop-window-size-v1";
+  const SCROLL_POSITION_KEY = "trademath-scroll-position-v1";
   const PHONE_RESULTS_QUERY = "(orientation: portrait) and (max-width: 540px)";
   const PORTRAIT_RESULTS_QUERY = "(orientation: portrait) and (max-width: 1120px)";
 
@@ -168,29 +169,12 @@
         JSON.stringify({
           width: window.outerWidth,
           height: window.outerHeight,
-          contentWidth: window.innerWidth,
         }),
       );
     }
 
-    function keepSavedPhoneWidth() {
-      const contentWidth = saved?.contentWidth;
-      if (
-        Number.isFinite(contentWidth) &&
-        contentWidth >= 320 &&
-        contentWidth <= 540 &&
-        window.innerWidth > contentWidth &&
-        window.innerWidth <= 540 &&
-        window.innerWidth - contentWidth <= 80
-      ) {
-        document.documentElement.style.setProperty("--saved-phone-width", `${contentWidth}px`);
-        document.documentElement.classList.add("saved-phone-width");
-      }
-    }
-
     window.addEventListener("resize", () => {
       if (!ready) return;
-      document.documentElement.classList.remove("saved-phone-width");
       resizedAfterLaunch = true;
       window.clearTimeout(resizeTimer);
       resizeTimer = window.setTimeout(rememberSize, 300);
@@ -212,10 +196,58 @@
         }
         window.setTimeout(() => {
           ready = true;
-          keepSavedPhoneWidth();
         }, 1000);
       });
     }
+  }
+
+  function setupScrollPositionRestore(skipSavedPosition = false) {
+    if (!window.matchMedia("(display-mode: standalone)").matches) return;
+    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+
+    const stored = Number(localStorage.getItem(SCROLL_POSITION_KEY));
+    const savedY = !skipSavedPosition && Number.isFinite(stored) && stored > 0 ? stored : 0;
+    let ready = false;
+    let userMoved = false;
+    let saveTimer = 0;
+
+    const markInteraction = () => { userMoved = true; };
+    ["pointerdown", "touchstart", "wheel", "keydown"].forEach((eventName) => {
+      window.addEventListener(eventName, markInteraction, { passive: true, once: true });
+    });
+
+    function rememberPosition() {
+      if (!ready || document.documentElement.classList.contains("dialog-stack-open")) return;
+      localStorage.setItem(SCROLL_POSITION_KEY, String(Math.round(window.scrollY)));
+    }
+
+    function restorePosition() {
+      if (!savedY || userMoved) return;
+      document.documentElement.classList.add("restoring-scroll-position");
+      window.scrollTo({ left: 0, top: savedY, behavior: "instant" });
+      window.requestAnimationFrame(() => {
+        document.documentElement.classList.remove("restoring-scroll-position");
+      });
+    }
+
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        restorePosition();
+        ready = true;
+      });
+    });
+    // Fonts and late resources can shift the document after its first layout.
+    document.fonts?.ready.then(restorePosition);
+    window.addEventListener("load", restorePosition, { once: true });
+    window.addEventListener("scroll", () => {
+      if (!ready) return;
+      window.clearTimeout(saveTimer);
+      saveTimer = window.setTimeout(rememberPosition, 120);
+    }, { passive: true });
+    window.addEventListener("pagehide", rememberPosition);
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden") rememberPosition();
+    });
   }
 
   function setupDesktopDragScroll() {
@@ -2444,6 +2476,7 @@
     renderLanguages();
     renderHistory();
     calculateAndRender();
+    setupScrollPositionRestore(Boolean(restoredStateReason));
     if (restoredStateReason === "refresh") showToast(I18n.t("refreshComplete"));
   }
 
