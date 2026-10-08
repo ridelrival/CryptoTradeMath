@@ -16,7 +16,7 @@
   const ATTENTION_PANEL_KEY = "trademath-attention-panel-open";
   const REFRESH_STATE_KEY = "trademath-refresh-state-v1";
   const DESKTOP_WINDOW_SIZE_KEY = "trademath-desktop-window-size-v1";
-  const PHONE_RESULTS_QUERY = "(orientation: portrait) and (max-width: 500px)";
+  const PHONE_RESULTS_QUERY = "(orientation: portrait) and (max-width: 540px)";
   const PORTRAIT_RESULTS_QUERY = "(orientation: portrait) and (max-width: 1120px)";
 
   const $ = (id) => document.getElementById(id);
@@ -178,9 +178,9 @@
       if (
         Number.isFinite(contentWidth) &&
         contentWidth >= 320 &&
-        contentWidth <= 500 &&
+        contentWidth <= 540 &&
         window.innerWidth > contentWidth &&
-        window.innerWidth <= 500 &&
+        window.innerWidth <= 540 &&
         window.innerWidth - contentWidth <= 80
       ) {
         document.documentElement.style.setProperty("--saved-phone-width", `${contentWidth}px`);
@@ -219,7 +219,7 @@
   }
 
   function setupDesktopDragScroll() {
-    const narrowWindow = window.matchMedia("(max-width: 500px) and (pointer: fine)");
+    const narrowWindow = window.matchMedia("(max-width: 540px) and (pointer: fine)");
     const interactive =
       'a, button, input, textarea, select, label, summary, [role="button"], [role="combobox"], [role="slider"], [role="switch"], [contenteditable], [draggable="true"]';
     let drag = null;

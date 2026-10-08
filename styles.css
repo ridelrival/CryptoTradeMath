@@ -2943,7 +2943,7 @@ body.dialog-stack-open .modal {
   }
 }
 
-@media (max-width: 500px) {
+@media (max-width: 540px) {
   .app-shell {
     padding-right: 10px;
     padding-left: 10px;
@@ -3209,7 +3209,7 @@ body.dialog-stack-open .modal {
   }
 }
 
-@media (orientation: portrait) and (max-width: 500px) {
+@media (orientation: portrait) and (max-width: 540px) {
   #parametersPanel .field > span:first-child {
     min-height: 1.25em;
   }
