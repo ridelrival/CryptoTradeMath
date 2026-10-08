@@ -300,84 +300,18 @@
     window.addEventListener("blur", finishDrag);
   }
 
-  function setupKeyboardScrollRestore() {
+  function setupTouchInputFocus() {
     const numericSelector = 'input[inputmode="decimal"], input[inputmode="numeric"]';
-    const touchScreen = window.matchMedia("(pointer: coarse)");
-    let session = null;
-    let restoreTimer = 0;
-
-    const viewportHeight = () => window.visualViewport?.height || window.innerHeight;
-    const viewportWidth = () => window.visualViewport?.width || window.innerWidth;
-    const isNumericField = (element) => element?.matches?.(numericSelector);
-    const isSmallTouchScreen = () =>
-      touchScreen.matches && Math.min(window.innerWidth, window.innerHeight) <= 600;
-
-    function rememberPosition(event) {
-      if (session || !isSmallTouchScreen() || !isNumericField(event.target)) return;
-      if (event.target.disabled || event.target.readOnly) return;
-      if (event.target.closest("dialog")) return;
-      window.clearTimeout(restoreTimer);
-      session = {
-        scrollY: window.scrollY,
-        height: viewportHeight(),
-        width: viewportWidth(),
-        keyboardShown: false,
-      };
-    }
-
-    function keyboardHasClosed() {
-      if (!session) return false;
-      const heightDifference = session.height - viewportHeight();
-      return heightDifference < Math.max(90, session.height * 0.12);
-    }
-
-    function restorePosition() {
-      window.clearTimeout(restoreTimer);
-      restoreTimer = window.setTimeout(() => {
-        if (!session?.keyboardShown || !keyboardHasClosed()) return;
-        const savedScrollY = session.scrollY;
-        session = null;
-        window.requestAnimationFrame(() => {
-          window.requestAnimationFrame(() => {
-            window.scrollTo({ left: 0, top: savedScrollY, behavior: "auto" });
-          });
-        });
-      }, 120);
-    }
-
-    function checkViewport() {
-      if (!session) return;
-      if (Math.abs(viewportWidth() - session.width) > 60) {
-        // A rotation or window resize starts a new layout, so the old position is stale.
-        window.clearTimeout(restoreTimer);
-        session = null;
-        return;
-      }
-      const heightDifference = session.height - viewportHeight();
-      if (heightDifference > Math.max(120, session.height * 0.18)) {
-        session.keyboardShown = true;
-        window.clearTimeout(restoreTimer);
-      } else if (session.keyboardShown && keyboardHasClosed()) {
-        restorePosition();
-      }
-    }
-
-    document.addEventListener("pointerdown", rememberPosition, true);
-    document.addEventListener("focusin", rememberPosition, true);
-    document.addEventListener(
-      "focusout",
-      (event) => {
-        if (!isNumericField(event.target) || !session) return;
-        window.setTimeout(() => {
-          if (!session || isNumericField(document.activeElement)) return;
-          if (session.keyboardShown) restorePosition();
-          else session = null;
-        }, 250);
-      },
-      true,
-    );
-    window.visualViewport?.addEventListener("resize", checkViewport);
-    window.addEventListener("resize", checkViewport);
+    document.addEventListener("pointerdown", (event) => {
+      if (event.pointerType !== "touch") return;
+      if (Math.min(window.innerWidth, window.innerHeight) > 600) return;
+      const target = event.target;
+      if (!(target instanceof Element) || target.closest("dialog")) return;
+      const input = target.matches(numericSelector) ? target : null;
+      if (!input || input.disabled || input.readOnly) return;
+      // Focus within the tap gesture before the browser's default focus scroll.
+      input.focus({ preventScroll: true });
+    }, true);
   }
 
   function clearPointerFocus() {
@@ -2452,7 +2386,7 @@
     setupInputModality();
     setupDesktopWindowSize();
     setupDesktopDragScroll();
-    setupKeyboardScrollRestore();
+    setupTouchInputFocus();
     syncRefreshButtonLabel();
     syncFeeRefreshButtonLabel();
     arrangeInputPanels();
