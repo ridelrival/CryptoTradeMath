@@ -17,6 +17,7 @@
   const REFRESH_STATE_KEY = "trademath-refresh-state-v1";
   const DESKTOP_WINDOW_SIZE_KEY = "trademath-desktop-window-size-v1";
   const SCROLL_POSITION_KEY = "trademath-scroll-position-v1";
+  const PHONE_RESULTS_COLLAPSED_KEY = "trademath-phone-results-collapsed-v1";
   const PHONE_RESULTS_QUERY = "(orientation: portrait) and (max-width: 540px)";
   const PORTRAIT_RESULTS_QUERY = "(orientation: portrait) and (max-width: 1120px)";
 
@@ -974,7 +975,8 @@
   function restoreExchangePanelState() {
     const panel = $("exchangeExecutionPanel");
     if (!panel) return;
-    panel.open = localStorage.getItem(EXCHANGE_PANEL_KEY) !== "closed";
+    const saved = localStorage.getItem(EXCHANGE_PANEL_KEY);
+    panel.open = saved === "open" || (saved !== "closed" && !window.matchMedia(PHONE_RESULTS_QUERY).matches);
   }
 
   function restoreAttentionPanelState() {
@@ -1004,6 +1006,75 @@
     form.insertBefore(parametersStack, advancedPanel);
     primaryStack.append(exchangePanel, exitPlanPanel, advancedPanel);
     parametersStack.append(parametersPanel);
+  }
+
+  function setupPhoneSettingsPanels() {
+    const dialog = $("settingsDialog");
+    const host = $("settingsCalculatorPanels");
+    const exchangePanel = $("exchangeExecutionPanel");
+    const advancedPanel = form.querySelector(".details-panel");
+    const dialogHome = document.createComment("settings dialog home");
+    const exchangeHome = document.createComment("exchange panel home");
+    const advancedHome = document.createComment("advanced panel home");
+    dialog.before(dialogHome);
+    exchangePanel.before(exchangeHome);
+    advancedPanel.before(advancedHome);
+
+    function sync() {
+      if (window.matchMedia(PHONE_RESULTS_QUERY).matches) {
+        if (dialog.parentElement !== form) form.append(dialog);
+        host.append(exchangePanel, advancedPanel);
+        host.hidden = false;
+      } else {
+        if (dialog.open) closeSettingsStack();
+        exchangeHome.after(exchangePanel);
+        advancedHome.after(advancedPanel);
+        host.hidden = true;
+        dialogHome.after(dialog);
+      }
+    }
+
+    window.matchMedia(PHONE_RESULTS_QUERY).addEventListener("change", sync);
+    sync();
+  }
+
+  function setupPhoneResultsToggle() {
+    const panel = $("resultsPanel");
+    const heading = $("resultsPanelHeading");
+    let collapsed = localStorage.getItem(PHONE_RESULTS_COLLAPSED_KEY) === "collapsed";
+
+    function sync() {
+      const phone = window.matchMedia(PHONE_RESULTS_QUERY).matches;
+      panel.classList.toggle("phone-collapsed", phone && collapsed);
+      if (phone) {
+        heading.setAttribute("role", "button");
+        heading.setAttribute("tabindex", "0");
+        heading.setAttribute("aria-controls", "resultsContent");
+        heading.setAttribute("aria-expanded", String(!collapsed));
+      } else {
+        heading.removeAttribute("role");
+        heading.removeAttribute("tabindex");
+        heading.removeAttribute("aria-controls");
+        heading.removeAttribute("aria-expanded");
+      }
+    }
+
+    function toggle() {
+      if (!window.matchMedia(PHONE_RESULTS_QUERY).matches) return;
+      collapsed = !collapsed;
+      localStorage.setItem(PHONE_RESULTS_COLLAPSED_KEY, collapsed ? "collapsed" : "open");
+      sync();
+    }
+
+    heading.addEventListener("click", toggle);
+    heading.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      if (!window.matchMedia(PHONE_RESULTS_QUERY).matches) return;
+      event.preventDefault();
+      toggle();
+    });
+    window.matchMedia(PHONE_RESULTS_QUERY).addEventListener("change", sync);
+    sync();
   }
 
   function syncResultLayout() {
@@ -2390,6 +2461,8 @@
     syncRefreshButtonLabel();
     syncFeeRefreshButtonLabel();
     arrangeInputPanels();
+    setupPhoneSettingsPanels();
+    setupPhoneResultsToggle();
     setupThemedSelects();
     applyTheme(localStorage.getItem(THEME_KEY) || "dark", false);
     syncSettingsValues();

@@ -31,6 +31,7 @@ Live site: <https://ridelrival.github.io/CryptoTradeMath/>
 - All former Advanced Results metrics now appear inside Trade Analysis Results, without a separate Advanced Results panel.
 - A valid plan shows its LONG or SHORT direction beside Valid. When entered leverage exceeds the estimated safe limit, the header shows Invalid and Max Safe Leverage.
 - On small touch screens, tapping a numeric field focuses it without requesting a page scroll; closing the keyboard does not force a scroll back.
+- On portrait phones up to 540 CSS px wide, Trade Analysis Results can be expanded or collapsed, and its state is remembered. Venue & Costs and Advanced are available inside the top-right Settings menu. The header sits slightly lower for the phone safe area.
 
 ## Execution Costs & Exchange Rules
 
@@ -121,7 +122,7 @@ SHORT: Entry < Stop Loss < liquidation
 
 ## Exchange presets and public specifications
 
-The single Exchange selector is ordered Binance, Bybit, OKX, Hyperliquid, Aster, Gate.io, Bitget, MEXC, Lighter, and Custom/Manual. The Exchange & Execution panel appears above Parameters and remembers its expanded or collapsed state. Fees vary by pair, tier, region, promotion, token discount, and execution method, so verify the displayed rate in the exchange account.
+The single Exchange selector is ordered Binance, Bybit, OKX, Hyperliquid, Aster, Gate.io, Bitget, MEXC, Lighter, and Custom/Manual. The Exchange & Execution panel appears above Parameters outside narrow portrait phone mode; on those phones it is inside Settings. It remembers its expanded or collapsed state. Fees vary by pair, tier, region, promotion, token discount, and execution method, so verify the displayed rate in the exchange account.
 
 Automatic public contract-specification adapters are included for OKX, Binance, Bybit, Gate.io, Bitget, MEXC, Hyperliquid, Aster, and Lighter. Gate.io and MEXC each have primary and alternative public endpoints. A venue may still block direct browser requests through CORS or a regional network rule; in that case the calculator uses a verified cached copy when available, otherwise it falls back to manual, explicitly unverified input.
 

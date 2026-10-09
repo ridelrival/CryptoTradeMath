@@ -1675,6 +1675,10 @@ details[open] > summary .summary-arrow {
   cursor: default;
 }
 
+.results-summary-arrow {
+  display: none;
+}
+
 .results-panel-heading > span:first-child {
   display: grid;
   min-width: 0;
@@ -2268,6 +2272,10 @@ body.dialog-stack-open .modal {
   display: grid;
   gap: 9px;
   padding: 18px 20px 22px;
+}
+
+.settings-calculator-panels[hidden] {
+  display: none;
 }
 
 .settings-option {
@@ -3214,6 +3222,44 @@ body.dialog-stack-open .modal {
 }
 
 @media (orientation: portrait) and (max-width: 540px) {
+  .app-header {
+    padding-top: calc(17px + var(--app-safe-top));
+  }
+
+  .settings-calculator-panels {
+    display: grid;
+    gap: 9px;
+  }
+
+  .settings-calculator-panels .field-grid {
+    padding: 16px 14px 18px;
+  }
+
+  .settings-calculator-panels .fee-rate-pair {
+    grid-column: 1 / -1;
+  }
+
+  .results-panel-heading {
+    cursor: pointer;
+  }
+
+  .results-panel-heading:focus-visible {
+    outline: 2px solid var(--green);
+    outline-offset: -4px;
+  }
+
+  .results-summary-arrow {
+    display: inline-grid;
+  }
+
+  .results-panel:not(.phone-collapsed) .results-summary-arrow {
+    transform: rotate(180deg);
+  }
+
+  .results-panel.phone-collapsed .results-content {
+    display: none;
+  }
+
   #parametersPanel .field > span:first-child {
     min-height: 1.25em;
   }

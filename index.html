@@ -35,7 +35,7 @@
     <link rel="manifest" href="./manifest.webmanifest" />
     <link rel="icon" type="image/png" href="./assets/icons/favicon-64.png" />
     <link rel="apple-touch-icon" href="./assets/icons/icon-192.png" />
-    <link rel="stylesheet" href="./styles.css?v=97" />
+    <link rel="stylesheet" href="./styles.css?v=98" />
     <title>Crypto TradeMath</title>
   </head>
   <body>
@@ -605,14 +605,15 @@
           <div id="alerts" class="alerts" aria-live="polite" aria-atomic="false"></div>
 
           <section id="resultsPanel" class="results-panel" aria-labelledby="resultsHeading">
-            <div class="results-panel-heading">
+            <div id="resultsPanelHeading" class="results-panel-heading">
               <span>
                 <span class="eyebrow" data-i18n="tradeAnalysis">Trade analysis</span>
                 <strong id="resultsHeading" data-i18n="results">Results</strong>
               </span>
+              <span class="summary-arrow results-summary-arrow" aria-hidden="true">⌄</span>
             </div>
 
-            <div class="results-content">
+            <div id="resultsContent" class="results-content">
           <div class="trade-controls">
             <span class="direction-copy">
               <span class="control-label" data-i18n="typeOfTrade">Type of trade</span>
@@ -746,6 +747,7 @@
         <button class="icon-button" data-close-dialog="settingsDialog" type="button" aria-label="Close">×</button>
       </div>
       <div class="settings-list">
+        <div id="settingsCalculatorPanels" class="settings-calculator-panels" hidden></div>
         <button id="settingsHistoryAction" class="settings-option" type="button">
           <span class="settings-option-icon" aria-hidden="true">↗</span>
           <span><strong data-i18n="history">History</strong><small data-i18n="historySettingsCopy">View saved trade plans</small></span>
@@ -871,6 +873,6 @@
     <script src="./contract-specs.js?v=44"></script>
     <script src="./exchange-max-leverage.js?v=67"></script>
     <script src="./exchange-fee-rates.js?v=67"></script>
-    <script src="./app.js?v=95"></script>
+    <script src="./app.js?v=96"></script>
   </body>
 </html>
