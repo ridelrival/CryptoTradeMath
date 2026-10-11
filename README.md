@@ -30,7 +30,7 @@ Live site: <https://ridelrival.github.io/CryptoTradeMath/>
 - The Take Profit gear opens a TP Targets ON/OFF switch in portrait layouts. OFF is the default: Exit Plan is hidden and TP2/TP3 are excluded from calculation, while their entered values remain available when the switch returns to ON.
 - All former Advanced Results metrics now appear inside Trade Analysis Results, without a separate Advanced Results panel.
 - A valid plan shows its LONG or SHORT direction beside Valid. When entered leverage exceeds the estimated safe limit, the header shows Invalid and Max Safe Leverage.
-- On small touch screens, tapping a numeric field focuses it without requesting a page scroll; closing the keyboard does not force a scroll back.
+- On small touch screens, tapping a numeric field focuses it without requesting a page scroll; swiping from the field scrolls without opening the numeric keyboard. Closing the keyboard does not force a scroll back.
 - On portrait phones up to 540 CSS px wide, Trade Analysis Results can be expanded or collapsed, and its state is remembered. Venue & Costs and Advanced are available inside the top-right Settings menu. The header sits slightly lower for the phone safe area.
 
 ## Execution Costs & Exchange Rules

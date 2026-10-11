@@ -303,15 +303,38 @@
 
   function setupTouchInputFocus() {
     const numericSelector = 'input[inputmode="decimal"], input[inputmode="numeric"]';
+    let touch = null;
+
     document.addEventListener("pointerdown", (event) => {
       if (event.pointerType !== "touch") return;
+      touch = null;
       if (Math.min(window.innerWidth, window.innerHeight) > 600) return;
       const target = event.target;
       if (!(target instanceof Element) || target.closest("dialog")) return;
       const input = target.matches(numericSelector) ? target : null;
       if (!input || input.disabled || input.readOnly) return;
-      // Focus within the tap gesture before the browser's default focus scroll.
+      touch = { id: event.pointerId, input, x: event.clientX, y: event.clientY, moved: false };
+    }, true);
+
+    document.addEventListener("pointermove", (event) => {
+      if (!touch || event.pointerId !== touch.id) return;
+      if (Math.hypot(event.clientX - touch.x, event.clientY - touch.y) > 8) {
+        touch.moved = true;
+      }
+    }, true);
+
+    document.addEventListener("pointerup", (event) => {
+      if (!touch || event.pointerId !== touch.id) return;
+      const { input } = touch;
+      const moved = touch.moved || Math.hypot(event.clientX - touch.x, event.clientY - touch.y) > 8;
+      touch = null;
+      if (moved || !input.isConnected) return;
+      // A completed tap opens the keyboard without moving the page; a swipe does neither.
       input.focus({ preventScroll: true });
+    }, true);
+
+    document.addEventListener("pointercancel", (event) => {
+      if (touch?.id === event.pointerId) touch = null;
     }, true);
   }
 
